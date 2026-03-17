@@ -6,6 +6,7 @@ using ProyectoPersonal.Filter;
 using ProyectoPersonal.Helpers;
 using ProyectoPersonal.Models;
 using ProyectoPersonal.Repositories;
+using ProyectoPersonal.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -14,8 +15,8 @@ namespace ProyectoPersonal.Controllers
     public class ManagedController : Controller
     {
         private RepositoryTrivial repo;
-        private readonly MailKitService mailService;
-        public ManagedController(RepositoryTrivial repo, MailKitService mailService)
+        private IMailKitService mailService;
+        public ManagedController(RepositoryTrivial repo, IMailKitService mailService)
         {
             this.repo = repo;
             this.mailService = mailService;
@@ -27,7 +28,7 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
-            Usuario usuario = await this.repo.LoginUsuarioAsync(username,password);
+            Usuario usuario = await this.repo.LoginUsuarioAsync(username, password);
             if (usuario != null)
             {
                 ClaimsIdentity identity =
@@ -52,10 +53,10 @@ namespace ProyectoPersonal.Controllers
                     (CookieAuthenticationDefaults.AuthenticationScheme,
                     userPrincipal);
             }
-                TempData.Clear();
-                return RedirectToAction("Index", "Trivial");
-            
-            
+            TempData.Clear();
+            return RedirectToAction("Index", "Partidas");
+
+
         }
         public async Task<IActionResult> Logout()
         {
@@ -93,6 +94,19 @@ namespace ProyectoPersonal.Controllers
                 // en la variable 'ModelState' qué campo es el que sigue dando error.
                 return View(newusuario);
             }
+
+            string duplicado = await this.repo.ComprobarUsuarioDuplicadoAsync(newusuario.Nombre, newusuario.Email);
+
+            if (duplicado == "email")
+            {
+                ViewData["ERROR"] = "Ya existe un jugador registrado con ese correo electrónico.";
+                return View(newusuario); // Le devolvemos a la vista con sus datos para que no tenga que escribir todo de nuevo
+            }
+            else if (duplicado == "nombre")
+            {
+                ViewData["ERROR"] = "Ese nombre ya está en uso. ¡Elige otro!";
+                return View(newusuario);
+            }
             // 1. Aquí generas un Token aleatorio (ej. un Guid)
             string miToken = Guid.NewGuid().ToString();
 
@@ -122,7 +136,7 @@ namespace ProyectoPersonal.Controllers
             {
                 await this.repo.CambiarAvatarAsync(idUsuario, nombreAvatar);
             }
-            return RedirectToAction("Perfil");
+            return RedirectToAction("Perfil", "Managed");
         }
         [HttpGet]
         public async Task<IActionResult> ActivarCuenta(string token)
@@ -205,6 +219,67 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             await this.repo.DeleteUsuario(idusuario);
             return RedirectToAction("Login", "Managed");
+        }
+        public IActionResult OlvidoPassword()
+        {
+            return View();
+        }
+
+        // POST: Managed/OlvidoPassword
+        [HttpPost]
+        public async Task<IActionResult> OlvidoPassword(string email)
+        {
+            // 1. El repo hace el update y nos devuelve al usuario con su nuevo token
+            Usuario usuario = await this.repo.GenerarTokenRecuperacionAsync(email);
+
+            if (usuario != null)
+            {
+                // 2. Como ya tenemos el objeto entero, le pasamos sus propiedades al MailService
+                await this.mailService.EnviarEmailRecuperacionAsync(usuario.Email, usuario.Nombre, usuario.TokenMail);
+
+                ViewBag.Mensaje = "Si el correo existe en nuestra base, recibirás un enlace de recuperación pronto.";
+            }
+            else
+            {
+                ViewBag.Error = "No hemos encontrado ninguna cuenta asociada a ese correo.";
+            }
+
+            return View();
+        }
+        public IActionResult ResetPassword(string token)
+        {
+            // 1. Validamos que la URL realmente traiga un token
+            if (string.IsNullOrEmpty(token))
+            {
+                TempData["ERROR"] = "El enlace de recuperación no es válido o está incompleto.";
+                return RedirectToAction("Login");
+            }
+
+            // 2. Guardamos el token en el ViewBag para que el HTML lo pueda leer
+            ViewBag.Token = token;
+
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string token, string password)
+        {
+            string salt = HelperCryptography.GenerarSalt();
+            string passwordConSalt = password + salt;
+            string passwordHash = HelperCryptography.EncriptarTextoBasico(passwordConSalt);
+
+            // Aquí le pasamos la 'password' en texto plano, el Hash y el Salt
+            bool actualizado = await this.repo.ResetPasswordAsync(token, password, passwordHash, salt);
+
+            if (actualizado)
+            {
+                TempData["MENSAJE"] = "¡Contraseña actualizada! Ya puedes entrar con tu nueva clave.";
+                return RedirectToAction("Login");
+            }
+            else
+            {
+                ViewBag.Error = "El enlace ha caducado o es inválido. Inténtalo de nuevo.";
+                return View();
+            }
         }
     }
 }

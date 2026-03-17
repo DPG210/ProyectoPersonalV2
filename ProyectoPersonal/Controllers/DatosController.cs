@@ -14,7 +14,7 @@ namespace ProyectoPersonal.Controllers
         private RepositoryTrivial repo;
         private IMemoryCache memoryCache;
         private readonly IHubContext<TrivialHub> hubContext;
-        public DatosController(RepositoryTrivial repo, IMemoryCache memory, IHubContext<TrivialHub> hubContext)
+        public DatosController(RepositoryTrivial repo, IMemoryCache memoryCache, IHubContext<TrivialHub> hubContext)
         {
             this.repo = repo;
             this.memoryCache = memoryCache;

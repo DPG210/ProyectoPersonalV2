@@ -114,7 +114,7 @@
                         <div class="text-7xl font-black text-slate-900 dark:text-white" id="final-score">0 <span class="text-xl text-red-600 dark:text-red-900 uppercase">Pts</span></div>
                     </div>
 
-                    <form id="form-guardar-ranking" asp-action="GuardarRanking" asp-controller="Trivial" method="post" class="pt-10">
+                    <form id="form-guardar-ranking" asp-action="GuardarRanking" asp-controller="Partidas" method="post" class="pt-10">
                         <input type="hidden" id="input-puntos" name="puntos" value="0" />
                         <input type="hidden" name="modoJuego" value="RULETA" />
                         <input type="hidden" name="nombreCuestionario" value="@ViewBag.NombreCuestionario" />
@@ -372,7 +372,7 @@
                 formData.append('motivo', document.getElementById('motivoReporte').value);
                 formData.append('comentario', document.getElementById('comentarioReporte').value);
 
-                const response = await fetch('/Trivial/ReportarPregunta', { method: 'POST', body: formData });
+                const response = await fetch('/Social/ReportarPregunta', { method: 'POST', body: formData });
                 const data = await response.json();
 
                 if(data.success) {

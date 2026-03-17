@@ -27,7 +27,7 @@ namespace ProyectoPersonal.Controllers
         private RepositoryTrivial repo;
        
         private readonly IHubContext<TrivialHub> hubContext;
-        public PartidasController(RepositoryTrivial repo, MailKitService mailService, IMemoryCache memoryCache, IHubContext<TrivialHub> hubContext)
+        public PartidasController(RepositoryTrivial repo,  IMemoryCache memoryCache, IHubContext<TrivialHub> hubContext)
         {
             this.repo= repo;
             
@@ -252,42 +252,8 @@ namespace ProyectoPersonal.Controllers
 
             TempData["MensajeExito"] = $"¡Partida de Supervivencia terminada! Has conseguido {puntos} puntos.";
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index","Partidas");
         }
-        
-        
-        //public async Task<IActionResult> Login()
-        //{
-        //    return View();
-        //}
-        ////[HttpPost]
-        ////public async Task<IActionResult> Login(string username, string password)
-        ////{
-        ////    Usuario usuario= await this.repo.LoginUsuarioAsync(username, password);
-        ////    if(usuario != null)
-        ////    {
-        ////        if (usuario.Activo == false)
-        ////        {
-                    
-        ////            ViewData["MENSAJE"] = "Tu cuenta aún no está activada. Por favor, revisa tu correo electrónico y haz clic en el enlace.";
-        ////            return View();
-        ////        }
-                
-        ////        HttpContext.Session.SetString("USUARIO", usuario.Nombre);
-        ////        HttpContext.Session.SetInt32("ID_USUARIO", usuario.IdUsuario);
-        ////        HttpContext.Session.SetInt32("ROL", usuario.RolId);
-        ////        return RedirectToAction("Index");
-        ////    }
-        ////    else
-        ////    {
-                
-        ////        ViewData["Mensaje"] = "usuario no encontrasdo";
-        ////        return View();
-        ////    }
-                
-        ////}
-        
-        
         
         [AuthorizeUsuario]
         [HttpPost]

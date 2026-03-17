@@ -158,7 +158,7 @@
 
                     <div id="resultado-resumen" class="mb-10 text-lg w-full max-w-md mx-auto"></div>
 
-                    <a asp-action="Index" class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 px-12 rounded-2xl shadow-xl transition-transform hover:-translate-y-1 text-lg">
+                    <a asp-action="Index" asp-controller="Partidas" class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 px-12 rounded-2xl shadow-xl transition-transform hover:-translate-y-1 text-lg">
                         <i class="bi bi-house-door-fill"></i> VOLVER AL INICIO
                     </a>
                 </div>
@@ -316,7 +316,7 @@
             idPreguntaActualReporte = idsPreguntas[indexActual];
 
             try {
-                const response = await fetch('/Trivial/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
+                const response = await fetch('/Datos/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
                 const p = await response.json();
 
                 if (p.success) {
@@ -426,7 +426,7 @@
                 formData.append("idPregunta", idPreguntaActualReporte);
                 formData.append("respuestaUsuario", texto);
 
-                const response = await fetch("/Trivial/ValidarPregunta", { method: "POST", body: formData });
+                const response = await fetch("/Partidas/ValidarPregunta", { method: "POST", body: formData });
                 const data = await response.json();
 
                 document.getElementById("input-area-UI").classList.add("hidden");
@@ -483,7 +483,7 @@
                 formData.append("partidaId", partidaId);
                 formData.append("indicePregunta", indexActual);
                 formData.append("esCorrecta", esCorrecta);
-                const response = await fetch("/Trivial/RegistrarRespuesta", { method: "POST", body: formData });
+                const response = await fetch("/Datos/RegistrarRespuesta", { method: "POST", body: formData });
                 const data = await response.json();
                 if (data.todosListos) mostrarRankingIntermedio(data.ranking);
             } catch (error) { console.error(error); }
@@ -538,7 +538,7 @@
                 const formData = new URLSearchParams();
                 formData.append("partidaId", partidaId);
                 formData.append("nuevoIndice", indexActual + 1);
-                await fetch("/Trivial/AvanzarPregunta", { method: "POST", body: formData });
+                await fetch("/Datos/AvanzarPregunta", { method: "POST", body: formData });
             } catch (error) { console.error(error); pasando = false; }
         }
 
@@ -558,7 +558,7 @@
                         formData.append("cuestionario", nombreCuestionario);
                         formData.append("correctas", contadorAciertos);
                         formData.append("totales", totalPreguntas);
-                        await fetch("/Trivial/GuardarPartidaIndividual", { method: "POST", body: formData });
+                        await fetch("/Datos/GuardarPartidaIndividual", { method: "POST", body: formData });
                     }
                 } catch (error) { console.error(error); }
             }

@@ -4,6 +4,7 @@ using ProyectoPersonal.Data;
 using ProyectoPersonal.Hubs;
 using ProyectoPersonal.Policies;
 using ProyectoPersonal.Repositories;
+using ProyectoPersonal.Services;
 using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +24,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSignalR();
 builder.Services.AddTransient<RepositoryTrivial>();
-builder.Services.AddTransient<MailKitService>();
+builder.Services.AddTransient<IMailKitService,MailKitService>();
 string connectionString = builder.Configuration.GetConnectionString("SqlTrivial");
 builder.Services.AddDbContext<TrivialContext>
     (options => options.UseSqlServer(connectionString));

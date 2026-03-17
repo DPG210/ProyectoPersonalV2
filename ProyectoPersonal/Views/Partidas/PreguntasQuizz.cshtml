@@ -120,7 +120,7 @@
 
                     <div id="resultado-final-texto" class="mb-10 text-lg w-full max-w-md mx-auto"></div>
 
-                    <a asp-action="Index" class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 px-12 rounded-2xl shadow-xl transition-all hover:-translate-y-1 text-lg">
+                    <a asp-action="Index" asp-controller="Partidas" class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 px-12 rounded-2xl shadow-xl transition-all hover:-translate-y-1 text-lg">
                         <i class="bi bi-house-door-fill"></i> VOLVER AL INICIO
                     </a>
                 </div>
@@ -316,7 +316,7 @@
             idPreguntaActualReporte = idsPreguntas[indexActual];
 
             try {
-                const response = await fetch('/Trivial/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
+                const response = await fetch('/Datos/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
                 const p = await response.json();
 
                 if (p.success) {
@@ -457,7 +457,7 @@
                 formData.append("partidaId", partidaId);
                 formData.append("indicePregunta", indexActual);
                 formData.append("esCorrecta", esCorrecta);
-                const response = await fetch("/Trivial/RegistrarRespuesta", { method: "POST", body: formData });
+                const response = await fetch("/Datos/RegistrarRespuesta", { method: "POST", body: formData });
                 const data = await response.json();
                 if (data.todosListos) mostrarRankingIntermedio(data.ranking);
             } catch (error) { console.error(error); }
@@ -511,7 +511,7 @@
                 const formData = new URLSearchParams();
                 formData.append("partidaId", partidaId);
                 formData.append("nuevoIndice", indexActual + 1);
-                await fetch("/Trivial/AvanzarPregunta", { method: "POST", body: formData });
+                await fetch("/Datos/AvanzarPregunta", { method: "POST", body: formData });
             } catch (error) { console.error(error); pasando = false; }
         }
 
@@ -535,7 +535,7 @@
                         formData.append("cuestionario", nombreCuestionario);
                         formData.append("correctas", contadorAciertos);
                         formData.append("totales", totalPreguntas);
-                        await fetch("/Trivial/GuardarPartidaIndividual", {
+                        await fetch("/Datos/GuardarPartidaIndividual", {
                             method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: formData
                         });
                     }
@@ -550,7 +550,7 @@
                 if (esModoMulti) {
                     // Lógica para multijugador (Ranking)
                     try {
-                        const response = await fetch(`/Trivial/GetRankingFinal?partidaId=${partidaId}`);
+                        const response = await fetch(`/Datos/GetRankingFinal?partidaId=${partidaId}`);
                         const ranking = await response.json();
                         let html = '<div class="space-y-4">';
                         ranking.forEach((j, i) => {
@@ -620,7 +620,7 @@
                 formData.append("comentario", comentario);
 
                 // Llamada a tu controlador existente
-                const response = await fetch("/Trivial/ReportarPregunta", {
+                const response = await fetch("/Social/ReportarPregunta", {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: formData

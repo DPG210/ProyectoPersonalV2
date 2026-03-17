@@ -120,7 +120,7 @@
                     <h2 class="text-7xl font-black text-amber-500 dark:text-amber-400 drop-shadow-sm dark:drop-shadow-[0_0_20px_rgba(251,191,36,0.5)]" id="final-score">0</h2>
                 </div>
 
-                <form id="form-guardar-ranking" asp-action="GuardarRanking" asp-controller="Trivial" method="post">
+                <form id="form-guardar-ranking" asp-action="GuardarRanking" asp-controller="Partidas" method="post">
                     <input type="hidden" id="input-puntos" name="puntos" value="0" />
                     <input type="hidden" name="modoJuego" value="SUPERVIVENCIA" />
                     <input type="hidden" name="nombreCuestionario" value="@ViewBag.NombreCuestionario" />
@@ -227,7 +227,7 @@
                 idPreguntaActualReporte = idsPreguntas[indexActual];
 
                 try {
-                    const response = await fetch('/Trivial/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
+                    const response = await fetch('/Datos/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
                     const p = await response.json();
 
                     if (p.success) {
@@ -440,7 +440,7 @@
                 formData.append('motivo', document.getElementById('motivoReporte').value);
                 formData.append('comentario', document.getElementById('comentarioReporte').value);
 
-                const response = await fetch('/Trivial/ReportarPregunta', { method: 'POST', body: formData });
+                const response = await fetch('/Social/ReportarPregunta', { method: 'POST', body: formData });
                 const data = await response.json();
 
                 if(data.success) {

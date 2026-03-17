@@ -367,6 +367,39 @@ BEGIN
     END CATCH
 END;
 GO
+    CREATE PROCEDURE [dbo].[sp_CambiarPassword]
+    @p_usuario_id INT,
+    @p_nuevo_password NVARCHAR(255),
+    @p_nuevo_hash NVARCHAR(100),
+    @p_nuevo_salt NVARCHAR(100)
+AS
+BEGIN
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Actualizamos la tabla principal (Password y vaciamos el TokenMail)
+        UPDATE USUARIOS
+        SET 
+            password = @p_nuevo_password,
+            TokenMail = NULL
+        WHERE usuario_id = @p_usuario_id;
+
+        -- 2. Actualizamos la tabla de seguridad (Hash y Salt)
+        UPDATE USER_SECURITY
+        SET 
+            password_hash = @p_nuevo_hash,
+            salt = @p_nuevo_salt
+        WHERE id_usuario = @p_usuario_id;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Si algo falla, deshacemos los cambios para no romper la cuenta
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
     */
     #endregion
 
@@ -1320,6 +1353,53 @@ public async Task<SalaJuego> GetSalaPorCodigoAsync(string codigoPartida)
 
             var resultados = await consulta.Take(10).ToListAsync();
             return resultados.Cast<dynamic>().ToList();
+        }
+        public async Task<Usuario> GenerarTokenRecuperacionAsync(string email)
+        {
+            
+            Usuario usuario = await this.context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+
+            
+            if (usuario == null) return null;
+
+            
+            usuario.TokenMail = Guid.NewGuid().ToString();
+
+            await this.context.SaveChangesAsync();
+
+            return usuario;
+        }
+        public async Task<bool> ResetPasswordAsync(string token, string passwordNormal, string passwordHash, string salt)
+        {
+            // 1. Averiguamos quién es el dueño de este token
+            var usuario = await this.context.Usuarios.FirstOrDefaultAsync(u => u.TokenMail == token);
+
+            if (usuario == null) return false; // Token falso o caducado
+
+            // 2. Preparamos los 4 parámetros exactos para el Procedimiento Almacenado
+            SqlParameter pamId = new SqlParameter("@usuario_id", usuario.IdUsuario);
+            SqlParameter pamPass = new SqlParameter("@nuevo_password", passwordNormal);
+            SqlParameter pamHash = new SqlParameter("@nuevo_hash", passwordHash);
+            SqlParameter pamSalt = new SqlParameter("@nuevo_salt", salt);
+
+            // 3. Ejecutamos el SP
+            string sql = "sp_CambiarPassword @usuario_id, @nuevo_password, @nuevo_hash, @nuevo_salt";
+            await this.context.Database.ExecuteSqlRawAsync(sql, pamId, pamPass, pamHash, pamSalt);
+
+            return true;
+        }
+        public async Task<string> ComprobarUsuarioDuplicadoAsync(string nombre, string email)
+        {
+            // Comprobamos primero el correo (suele ser lo más crítico)
+            bool existeEmail = await this.context.Usuarios.AnyAsync(u => u.Email == email);
+            if (existeEmail) return "email";
+
+            // Luego comprobamos el nombre
+            bool existeNombre = await this.context.Usuarios.AnyAsync(u => u.Nombre == nombre);
+            if (existeNombre) return "nombre";
+
+            // Si llega aquí, es que todo está libre
+            return null;
         }
     }
 }

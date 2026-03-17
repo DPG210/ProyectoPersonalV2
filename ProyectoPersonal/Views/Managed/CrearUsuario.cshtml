@@ -29,11 +29,13 @@
                 <p class="text-slate-500 dark:text-slate-400 font-bold mt-2 uppercase tracking-widest text-[10px]">Crea tu perfil de comandante</p>
             </div>
 
-            @* FORMULARIO BLINDADO: 
-               1. Atributos name manuales para asegurar mapeo con el controlador.
-               2. Action explícito para evitar confusiones de ruta.
-            *@
-            <form action="/Trivial/CrearUsuario" method="post" class="space-y-6">
+            @if (ViewData["ERROR"] != null)
+            {
+                <div class="bg-rose-50 dark:bg-rose-900/20 text-rose-600 p-4 rounded-2xl mb-6 font-bold text-sm text-center animate__animated animate__shakeX">
+                    <i class="bi bi-exclamation-triangle-fill mr-2"></i> @ViewData["ERROR"]
+                </div>
+            }
+            <form asp-controller = "Managed" asp-action="CrearUsuario" method="post" class="space-y-6">
                 @Html.AntiForgeryToken()
 
                 @* Sumario de errores del servidor *@
@@ -44,7 +46,7 @@
                     <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Alias de Jugador</label>
                     <div class="relative">
                         <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"><i class="bi bi-person-fill text-xl"></i></span>
-                        <input type="text" name="Nombre" required minlength="3" maxlength="20"
+                        <input type="text" name="Nombre" value="@Model?.Nombre" required minlength="3" maxlength="20"
                                class="w-full bg-slate-100/50 dark:bg-slate-800/50 border-2 border-transparent focus:border-fuchsia-500 dark:text-white rounded-2xl py-4 pl-14 pr-6 font-bold outline-none transition-all shadow-inner"
                                placeholder="Ej: SuperPlayer99" />
                     </div>
@@ -55,7 +57,7 @@
                     <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Correo de Contacto</label>
                     <div class="relative">
                         <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"><i class="bi bi-envelope-fill text-xl"></i></span>
-                        <input type="email" name="Email" required
+                        <input type="email" name="Email" value="@Model?.Email" required
                                class="w-full bg-slate-100/50 dark:bg-slate-800/50 border-2 border-transparent focus:border-fuchsia-500 dark:text-white rounded-2xl py-4 pl-14 pr-6 font-bold outline-none transition-all shadow-inner"
                                placeholder="correo@ejemplo.com" />
                     </div>
@@ -97,14 +99,10 @@
         </div>
 
         <div class="text-center mt-8">
-            <a asp-controller="Home" asp-action="Index" class="text-slate-400 hover:text-slate-600 text-xs font-black uppercase tracking-[0.2em] transition-colors">
-                <i class="bi bi-arrow-left"></i> Volver a la base
+            <a asp-controller="Managed" asp-action="Login" class="text-slate-400 hover:text-slate-600 text-xs font-black uppercase tracking-[0.2em] transition-colors">
+                <i class="bi bi-arrow-left"></i> Volver 
             </a>
         </div>
     </div>
 </div>
 
-@* HEMOS QUITADO LA CARGA DE SCRIPTS DE VALIDACIÓN.
-   Esto permite que el formulario se envíe sin que el JavaScript local lo bloquee.
-   La validación ahora recae en el Controlador (ModelState).
-*@

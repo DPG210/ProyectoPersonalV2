@@ -74,13 +74,13 @@ namespace ProyectoPersonal.Controllers
                 TempData["MensajeTienda"] = "¡Bienvenido al club VIP! Ya tienes ventajas exclusivas.";
             }
 
-            return RedirectToAction("Perfil", "Trivial", new { id = idUsuario });
+            return RedirectToAction("Perfil", "Managed", new { id = idUsuario });
         }
         [AuthorizeUsuario]
         public IActionResult PagoCancelado()
         {
             TempData["ErrorTienda"] = "El proceso de pago ha sido cancelado. ¡No te hemos cobrado nada!";
-            return RedirectToAction("Index");
+            return RedirectToAction("Index","Partidas");
         }
     }
 

@@ -2,68 +2,80 @@
 using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
+using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
-public class MailKitService
+// Asegúrate de que el namespace coincida con tu carpeta
+namespace ProyectoPersonal.Services
 {
-    private readonly IConfiguration _config;
-
-    public MailKitService(IConfiguration config)
+    public class MailKitService : IMailKitService
     {
-        _config = config;
-    }
+        private readonly IConfiguration _config;
 
-    public async Task EnviarEmailConfirmacionAsync(string emailDestino, string nombreUsuario, string tokenConfirmacion)
-    {
-        // 1. LEER LA CONFIGURACIÓN DE TU APPSETTINGS
-        string user = _config.GetValue<string>("MailSettings:Credentials:User");
-        string pass = _config.GetValue<string>("MailSettings:Credentials:Password");
-        string host = _config.GetValue<string>("MailSettings:Server:Host");
-        int port = _config.GetValue<int>("MailSettings:Server:Port");
-        bool useSsl = _config.GetValue<bool>("MailSettings:Server:Ssl");
-
-        // 2. FABRICAR EL MENSAJE
-        var email = new MimeMessage();
-
-        email.From.Add(new MailboxAddress("Trivial Challenge", user));
-        email.To.Add(new MailboxAddress(nombreUsuario, emailDestino));
-        email.Subject = "Confirma tu cuenta en Trivial Challenge 🎮";
-
-        // URL del token (cambiaremos el localhost por tu puerto real de Visual Studio)
-        string urlConfirmacion = $"https://localhost:7113/Trivial/ActivarCuenta?token={tokenConfirmacion}";
-
-        email.Body = new TextPart(TextFormat.Html)
+        public MailKitService(IConfiguration config)
         {
-            Text = $@"
-                <div style='font-family: Arial; padding: 20px; background-color: #f8fafc; border-radius: 10px;'>
-                    <h2 style='color: #0d9488;'>¡Bienvenido, {nombreUsuario}!</h2>
-                    <p>Ya casi estás listo para jugar. Haz clic en el siguiente enlace para activar tu cuenta:</p>
-                    <br>
-                    <a href='{urlConfirmacion}' style='background-color: #0d9488; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;'>Activar mi cuenta</a>
-                </div>"
-        };
+            _config = config;
+        }
 
-        // 3. ENVIAR EL MENSAJE CON MAILKIT
-        using var smtp = new SmtpClient();
-        try
+        // 1. Método para Recuperar Contraseña
+        public async Task EnviarEmailRecuperacionAsync(string emailDestino, string nombreUsuario, string token)
         {
-            // Nos conectamos usando la info de tu JSON
-            SecureSocketOptions opcionesSeguridad = useSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto;
-            await smtp.ConnectAsync(host, port, opcionesSeguridad);
+            // Ajusta el puerto al que estés usando en tu proyecto
+            string urlRecuperacion = $"https://localhost:7113/Managed/ResetPassword?token={token}";
 
-            // Nos autenticamos con tu usuario y contraseña
+            string mensajeHtml = $@"
+            <div style='font-family: Arial, sans-serif; padding: 20px; background-color: #fff7ed; border-radius: 10px; border: 1px solid #ffedd5;'>
+                <h2 style='color: #ea580c;'>¿Has olvidado tu contraseña?</h2>
+                <p>Hola <strong>{nombreUsuario}</strong>,</p>
+                <p>Hemos recibido una solicitud para restablecer tu clave de acceso al Trivial Challenge.</p>
+                <p>Si fuiste tú, pulsa el botón de abajo para elegir una nueva contraseña:</p>
+                <br>
+                <a href='{urlRecuperacion}' style='background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;'>Restablecer Contraseña</a>
+                <p style='font-size: 11px; color: #9a3412; margin-top: 20px;'>Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
+            </div>";
+
+            await EnviarEmailBaseAsync(emailDestino, nombreUsuario, "Recupera tu contraseña - Trivial Challenge 🔑", mensajeHtml);
+        }
+
+        // 2. Método para Confirmación de Cuenta
+        public async Task EnviarEmailConfirmacionAsync(string emailDestino, string nombreUsuario, string token)
+        {
+            string urlConfirmacion = $"https://localhost:7113/Managed/ActivarCuenta?token={token}";
+
+            string mensajeHtml = $@"
+            <div style='font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 10px;'>
+                <h2 style='color: #0d9488;'>¡Bienvenido, {nombreUsuario}!</h2>
+                <p>Gracias por unirte al desafío. Para activar tu cuenta de comandante, haz clic en el botón:</p>
+                <br>
+                <a href='{urlConfirmacion}' style='background-color: #0d9488; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;'>Activar mi cuenta</a>
+            </div>";
+
+            await EnviarEmailBaseAsync(emailDestino, nombreUsuario, "Confirma tu cuenta en Trivial Challenge 🎮", mensajeHtml);
+        }
+
+        // 3. MOTOR DE ENVÍO PRIVADO (Solo uno)
+        private async Task EnviarEmailBaseAsync(string destino, string nombre, string asunto, string cuerpoHtml)
+        {
+            string user = _config.GetValue<string>("MailSettings:Credentials:User");
+            string pass = _config.GetValue<string>("MailSettings:Credentials:Password");
+            string host = _config.GetValue<string>("MailSettings:Server:Host");
+            int port = _config.GetValue<int>("MailSettings:Server:Port");
+            bool useSsl = _config.GetValue<bool>("MailSettings:Server:Ssl");
+
+            var email = new MimeMessage();
+            email.From.Add(new MailboxAddress("Trivial Challenge", user));
+            email.To.Add(new MailboxAddress(nombre, destino));
+            email.Subject = asunto;
+            email.Body = new TextPart(TextFormat.Html) { Text = cuerpoHtml };
+
+            using var smtp = new SmtpClient();
+
+            // Usamos StartTls para puerto 587 (Gmail/Outlook) o SslOnConnect para 465
+            SecureSocketOptions options = useSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto;
+
+            await smtp.ConnectAsync(host, port, options);
             await smtp.AuthenticateAsync(user, pass);
-
-            // Enviamos el correo
             await smtp.SendAsync(email);
-        }
-        catch (Exception ex)
-        {
-            // Aquí puedes poner un Console.WriteLine para ver si Outlook te bloquea el intento
-            Console.WriteLine($"Error al enviar correo: {ex.Message}");
-            throw;
-        }
-        finally
-        {
             await smtp.DisconnectAsync(true);
         }
     }

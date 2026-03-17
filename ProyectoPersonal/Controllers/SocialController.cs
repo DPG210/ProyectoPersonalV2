@@ -24,7 +24,7 @@ namespace ProyectoPersonal.Controllers
             TempData["TabActiva"] = "social";
 
             // Después de enviar, volvemos a la lista de amigos
-            return RedirectToAction("Perfil");
+            return RedirectToAction("Perfil","Managed");
         }
         [AuthorizeUsuario]
         public async Task<IActionResult> AceptarAmigo(int idAmigo)
@@ -40,7 +40,7 @@ namespace ProyectoPersonal.Controllers
 
             TempData["TabActiva"] = "social";
             // 3. Volvemos a la vista de comunidad/amigos para ver los cambios
-            return RedirectToAction("Perfil");
+            return RedirectToAction("Perfil","Managed");
         }
 
         // Acción para Rechazar la invitación
@@ -54,7 +54,7 @@ namespace ProyectoPersonal.Controllers
 
             TempData["TabActiva"] = "social";
 
-            return RedirectToAction("Perfil");
+            return RedirectToAction("Perfil", "Managed");
         }
         [AuthorizeUsuario]
         [HttpPost]
