@@ -8,6 +8,7 @@
         public string Estado { get; set; }
         public int IdAnfitrion { get; set; }
         public string NombreAnfitrion { get; set; }
+        public string AvatarAnfitrion { get; set; }
         public string TipoJuego { get; set; } 
         public int CantidadPreguntas { get; set; }
         public int Tiempo { get; set; }

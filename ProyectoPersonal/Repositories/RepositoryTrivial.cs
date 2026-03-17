@@ -695,7 +695,8 @@ GO
 
             string titulo = await consulta.FirstOrDefaultAsync();
 
-            string nombre = await this.FindNombreUsuarioAsync(idAnfitrion);
+            Usuario usuarioAnfitrion = await this.context.Usuarios
+                .FirstOrDefaultAsync(u => u.IdUsuario == idAnfitrion);
             int idPartida;
             using (DbCommand com = this.context.Database.GetDbConnection().CreateCommand())
             {
@@ -722,7 +723,9 @@ GO
                 IdSala = idPartida,
                 CodigoSala = codigoSala,
                 IdAnfitrion = idAnfitrion,
-                NombreCuestionario = titulo, // Antes tenías 'row', aquí usamos 'titulo'
+                NombreAnfitrion = usuarioAnfitrion.Nombre, 
+                AvatarAnfitrion = usuarioAnfitrion.Avatar,
+                NombreCuestionario = titulo, 
                 Estado = "esperando",
                 TipoJuego = tipoJuego,
                 CantidadPreguntas = cantidad,
@@ -735,7 +738,7 @@ GO
                     new ParticipantePartida
                     {
                         IdUsuario = idAnfitrion,
-                        Nombre = nombre,
+                        Nombre = usuarioAnfitrion.Nombre,
                         Puntuacion = 0,
                         HaRespondido = false
                     }
@@ -981,6 +984,7 @@ public async Task<SalaJuego> GetSalaPorCodigoAsync(string codigoPartida)
                                CodigoSala = datos.CodigoSala,
                                IdAnfitrion = datos.IdAnfitrion,
                                NombreAnfitrion = datos.NombreAnfitrion,
+                               AvatarAnfitrion = datos.AvatarAnfrition,
                                NombreCuestionario = datos.NombreCuestionario,
                                TipoJuego = datos.TipoJuego,
                                CantidadPreguntas = datos.CantidadPreguntas,

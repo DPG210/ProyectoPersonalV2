@@ -34,5 +34,7 @@ namespace ProyectoPersonal.Models
 
         [Column("tiempo_pregunta")]
         public int TiempoPregunta { get; set; }
+        [Column("avatar_anfitrion")]
+        public string AvatarAnfrition { get; set; }
     }
 }
