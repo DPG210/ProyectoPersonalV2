@@ -1,4 +1,4 @@
-﻿@model List<ProyectoPersonal.Models.SalaJuego>
+﻿@model List<SalaJuego>
 
 @* --- ENVOLTORIO CON DEGRADADO SUAVE Y MODO OSCURO --- *@
 <div class="min-h-screen bg-slate-50 dark:bg-slate-900 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-100/50 via-slate-50 to-slate-100 dark:from-indigo-900/40 dark:via-slate-900 dark:to-slate-800 px-4 py-12 relative overflow-hidden transition-colors duration-500">
@@ -11,7 +11,7 @@
 
         @* --- BOTÓN VOLVER --- *@
         <div class="mb-6 animate__animated animate__fadeInLeft">
-            <a asp-action="Index" class="group inline-flex items-center gap-2 text-[10px] font-black text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all uppercase tracking-[0.2em] bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 backdrop-blur-md px-5 py-2.5 rounded-full shadow-sm hover:shadow-md border border-slate-200/60 dark:border-slate-700/60 active:scale-95">
+            <a asp-action="Index" asp-controller="Partidas" class="group inline-flex items-center gap-2 text-[10px] font-black text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all uppercase tracking-[0.2em] bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 backdrop-blur-md px-5 py-2.5 rounded-full shadow-sm hover:shadow-md border border-slate-200/60 dark:border-slate-700/60 active:scale-95">
                 <i class="bi bi-arrow-left text-base group-hover:-translate-x-1 transition-transform"></i> Volver al menú
             </a>
         </div>
@@ -64,7 +64,7 @@
                 </div>
                 <h3 class="text-3xl font-black text-slate-800 dark:text-white mb-3 tracking-tight">El desierto está vacío</h3>
                 <p class="text-slate-500 dark:text-slate-400 font-medium mb-10 text-lg">No hay partidas públicas en este momento. ¡Sé el primero en levantar una sala y que empiece la batalla!</p>
-                <a asp-action="Index" class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black px-12 py-5 rounded-[2rem] text-lg shadow-[0_8px_0_rgb(67,56,202)] hover:translate-y-[2px] hover:shadow-[0_6px_0_rgb(67,56,202)] active:translate-y-[8px] active:shadow-none transition-all">
+                <a asp-action="Index" asp-controller="Partidas" class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black px-12 py-5 rounded-[2rem] text-lg shadow-[0_8px_0_rgb(67,56,202)] hover:translate-y-[2px] hover:shadow-[0_6px_0_rgb(67,56,202)] active:translate-y-[8px] active:shadow-none transition-all">
                     <i class="bi bi-plus-circle-fill"></i> CREAR PARTIDA AHORA
                 </a>
             </div>
@@ -130,7 +130,7 @@
 
                             @* Footer de Acción *@
                             <div class="p-4 pt-0 mt-auto">
-                                <a asp-controller="Trivial" asp-action="Unirse" asp-route-codigoSala="@sala.CodigoSala"
+                                <a asp-controller="SalasMultijugador" asp-action="Unirse" asp-route-codigoSala="@sala.CodigoSala"
                                    class="relative block w-full overflow-hidden rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-black text-center py-4 tracking-widest uppercase transition-all group-hover:shadow-[0_4px_0_rgb(67,56,202)] group-hover:-translate-y-1 active:translate-y-0 active:shadow-none">
                                     <span class="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
                                     <span class="relative z-10 flex items-center justify-center gap-2 group-hover:text-white transition-colors duration-300">

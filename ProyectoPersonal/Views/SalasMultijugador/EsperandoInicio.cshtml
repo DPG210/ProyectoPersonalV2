@@ -75,7 +75,7 @@
         async function checkEstado() {
             try {
                 const codigoSala = "@ViewBag.CodigoSala";
-                const response = await fetch(`/Trivial/GetEstadoPartidaJson?codigo=${encodeURIComponent(codigoSala)}`);
+                const response = await fetch(`/SalasMultijugador/GetEstadoPartidaJson?codigo=${encodeURIComponent(codigoSala)}`);
 
                 if (!response.ok) throw new Error("Error al comunicar con el servidor");
 
@@ -112,9 +112,9 @@
 
                     let urlDestino = "";
                     if (data.tipoJuego.toLowerCase() === "quizz") {
-                        urlDestino = `/Trivial/PreguntasQuizz?nombreCuestionario=${encodeURIComponent(data.cuestionario)}&cantidad=${data.cantidad}&tiempo=${data.tiempo}&codigoSala=${codigoSala}`;
+                        urlDestino = `/Partidas/PreguntasQuizz?nombreCuestionario=${encodeURIComponent(data.cuestionario)}&cantidad=${data.cantidad}&tiempo=${data.tiempo}&codigoSala=${codigoSala}`;
                     } else {
-                        urlDestino = `/Trivial/PreguntasTrivial?nombreCuestionario=${encodeURIComponent(data.cuestionario)}&cantidad=${data.cantidad}&tiempo=${data.tiempo}&codigoSala=${codigoSala}`;
+                        urlDestino = `/Partidas/PreguntasTrivial?nombreCuestionario=${encodeURIComponent(data.cuestionario)}&cantidad=${data.cantidad}&tiempo=${data.tiempo}&codigoSala=${codigoSala}`;
                     }
 
                     // Retardo visual (1.5s) para que el jugador asimile que la partida ha empezado antes del pantallazo blanco

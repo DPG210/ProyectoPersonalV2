@@ -51,6 +51,10 @@ namespace ProyectoPersonal.Controllers
                 var reportesPendientes = await this.repo.GetReportesAbiertosAsync();
                 ViewBag.NumReportes = reportesPendientes.Count;
             }
+            
+            int miId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            ViewBag.NumSolicitudes = await this.repo.GetNumeroSolicitudesPendientesAsync(miId);
+            
             return View(categorias);
         }
         

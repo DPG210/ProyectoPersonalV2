@@ -1371,19 +1371,17 @@ public async Task<SalaJuego> GetSalaPorCodigoAsync(string codigoPartida)
         }
         public async Task<bool> ResetPasswordAsync(string token, string passwordNormal, string passwordHash, string salt)
         {
-            // 1. Averiguamos quién es el dueño de este token
-            var usuario = await this.context.Usuarios.FirstOrDefaultAsync(u => u.TokenMail == token);
+            string sql = "sp_CambiarPassword @usuario_id, @nuevo_password, @nuevo_hash, @nuevo_salt";
 
-            if (usuario == null) return false; // Token falso o caducado
+            Usuario usuario = await this.context.Usuarios.FirstOrDefaultAsync(u => u.TokenMail == token);
 
-            // 2. Preparamos los 4 parámetros exactos para el Procedimiento Almacenado
+            if (usuario == null) return false; 
+
             SqlParameter pamId = new SqlParameter("@usuario_id", usuario.IdUsuario);
             SqlParameter pamPass = new SqlParameter("@nuevo_password", passwordNormal);
             SqlParameter pamHash = new SqlParameter("@nuevo_hash", passwordHash);
             SqlParameter pamSalt = new SqlParameter("@nuevo_salt", salt);
-
-            // 3. Ejecutamos el SP
-            string sql = "sp_CambiarPassword @usuario_id, @nuevo_password, @nuevo_hash, @nuevo_salt";
+            
             await this.context.Database.ExecuteSqlRawAsync(sql, pamId, pamPass, pamHash, pamSalt);
 
             return true;
@@ -1400,6 +1398,32 @@ public async Task<SalaJuego> GetSalaPorCodigoAsync(string codigoPartida)
 
             // Si llega aquí, es que todo está libre
             return null;
+        }
+
+        public async Task CambiarPasswordDesdePerfilAsync(int idUsuario, string passwordNormal, string passwordHash, string salt)
+        {
+            string sql = "sp_CambiarPassword @usuario_id, @nuevo_password, @nuevo_hash, @nuevo_salt";
+
+            SqlParameter pamId = new SqlParameter("@usuario_id", idUsuario);
+            SqlParameter pamPass = new SqlParameter("@nuevo_password", passwordNormal);
+            SqlParameter pamHash = new SqlParameter("@nuevo_hash", passwordHash);
+            SqlParameter pamSalt = new SqlParameter("@nuevo_salt", salt);
+
+            await this.context.Database.ExecuteSqlRawAsync(sql, pamId, pamPass, pamHash, pamSalt);
+        }
+        public async Task<int> GetNumeroSolicitudesPendientesAsync(int idLogueado)
+        {
+            
+            return await this.context.Amistades
+                .CountAsync(a => a.IdUsuario2 == idLogueado && a.Estado == "PENDIENTE");
+        }
+        public async Task<List<Usuario>> BuscarUsuariosPorNombreAsync(string nombreBusqueda, int idLogueado)
+        {
+            
+            return await this.context.Usuarios
+                .Where(u => u.Nombre.Contains(nombreBusqueda) && u.IdUsuario != idLogueado)
+                .Take(10) 
+                .ToListAsync();
         }
     }
 }

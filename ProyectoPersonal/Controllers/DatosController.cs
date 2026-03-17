@@ -174,5 +174,27 @@ namespace ProyectoPersonal.Controllers
 
             return Json(listaRankings);
         }
+        [HttpGet]
+        public async Task<JsonResult> BuscarUsuarios(string textoBusqueda)
+        {
+            if (string.IsNullOrWhiteSpace(textoBusqueda) || textoBusqueda.Length < 3)
+            {
+                return Json(new List<Usuario>());
+            }
+
+            string idClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            int miId = int.Parse(idClaim);
+
+            List<Usuario> usuarios = await this.repo.BuscarUsuariosPorNombreAsync(textoBusqueda, miId);
+
+            var resultados = usuarios.Select(u => new
+            {
+                idUsuario = u.IdUsuario,
+                nombre = u.Nombre,
+                avatar = u.Avatar ?? "avatar1.png"
+            });
+
+            return Json(resultados);
+        }
     }
 }

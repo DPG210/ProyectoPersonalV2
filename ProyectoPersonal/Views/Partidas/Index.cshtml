@@ -72,9 +72,9 @@
                         <div class="relative">
                             <img src="~/images/avatares/@(User.FindFirst("Avatar")?.Value ?? "avatar1.png")" alt="Perfil" class="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:scale-105 transition-transform" />
                             <div class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full shadow-sm"></div>
+                            <span class="absolute -top-2 -right-2 bg-blue-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full animate-pulse border-2 border-white dark:border-slate-900 shadow-sm">@ViewBag.NumSolicitudes</span>
                         </div>
                         <div class="hidden sm:flex flex-col justify-center min-w-0">
-                            <span class="text-[9px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest leading-none mb-1">Comandante</span>
                             <span class="text-sm font-black text-slate-700 dark:text-slate-200 leading-none group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">@User.Identity.Name</span>
                         </div>
                     </a>
@@ -476,7 +476,7 @@
             document.getElementById("btn-comenzar").innerHTML = '<i class="bi bi-hourglass-split animate-spin text-2xl"></i> Preparando ...';
 
             if (document.getElementById("select-modo").value === "multi") {
-                const form = document.createElement("form"); form.method = "POST"; form.action = "/Social/CrearSala";
+                const form = document.createElement("form"); form.method = "POST"; form.action = "/SalasMultijugador/CrearSala";
                 for (const key in config) {
                     const input = document.createElement("input"); input.type = "hidden"; input.name = key; input.value = config[key];
                     form.appendChild(input);

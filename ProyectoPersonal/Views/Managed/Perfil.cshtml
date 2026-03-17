@@ -71,8 +71,9 @@
                         <a asp-controller="Tienda" asp-action="Index" class="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-black text-xs uppercase tracking-wider px-4 py-2 rounded-2xl shadow-md border border-orange-400 transition-transform hover:-translate-y-0.5 flex items-center gap-1.5">
                             <i class="bi bi-star-fill animate-pulse"></i> Tienda VIP
                         </a>
-
-                        @* BOTÓN BORRAR CUENTA *@
+                        <a asp-controller="Managed" asp-action="CambiarPassword" class="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm transition-all mt-4">
+                            <i class="bi bi-shield-lock-fill text-base"></i> Cambiar Contraseña
+                        </a>
                         <button type="button" onclick="confirmarBorradoCuenta()" class="bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-600 dark:hover:bg-rose-600 hover:text-white dark:hover:text-white font-black text-xs uppercase tracking-wider px-4 py-2 rounded-2xl shadow-sm border border-rose-100 dark:border-rose-900/50 transition-all flex items-center gap-1.5 group">
                             <i class="bi bi-trash3-fill group-hover:scale-110 transition-transform"></i> Borrar Cuenta
                         </button>
@@ -251,32 +252,21 @@
     <div id="content-social" class="tab-content hidden space-y-12 animate__animated animate__fadeIn">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-            @* Buscador *@
             <div class="lg:col-span-7 bg-white dark:bg-slate-900 p-10 rounded-[3rem] shadow-2xl shadow-indigo-100/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-800 transition-colors duration-300">
                 <h5 class="text-2xl font-black text-slate-900 dark:text-white mb-8 flex items-center gap-3 transition-colors">
                     <i class="bi bi-search-heart text-indigo-500 text-3xl"></i> Reclutar Aliados
                 </h5>
-                <form method="get" asp-action="Perfil" class="relative">
-                    <input type="hidden" name="id" value="@Model.IdUsuario" />
-                    <input type="text" name="buscar" class="w-full bg-slate-100 dark:bg-slate-950 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-500 rounded-[2rem] py-6 px-10 font-bold text-slate-700 dark:text-slate-200 outline-none transition-all text-lg shadow-inner placeholder-slate-400 dark:placeholder-slate-600" placeholder="Busca por nombre de usuario..." />
-                    <button type="submit" class="absolute right-3 top-3 bottom-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black px-10 rounded-3xl transition-all active:scale-95 text-xs tracking-widest shadow-lg">BUSCAR</button>
+
+                @* LE HEMOS PUESTO UN ID AL FORMULARIO Y QUITADO EL ACTION *@
+                <form id="form-buscador" class="relative">
+                    <input type="text" id="input-busqueda" class="w-full bg-slate-100 dark:bg-slate-950 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-500 rounded-[2rem] py-6 px-10 font-bold text-slate-700 dark:text-slate-200 outline-none transition-all text-lg shadow-inner placeholder-slate-400 dark:placeholder-slate-600" placeholder="Busca por nombre de usuario..." />
+                    <button type="submit" class="absolute right-3 top-3 bottom-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black px-10 rounded-3xl transition-all active:scale-95 text-xs tracking-widest shadow-lg">
+                        BUSCAR
+                    </button>
                 </form>
 
-                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    @if (ViewBag.ResultadosBusqueda != null)
-                    {
-                        foreach (InformacionUsuario user in ViewBag.ResultadosBusqueda)
-                        {
-                            <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] border-2 border-transparent hover:border-indigo-100 dark:hover:border-indigo-500/50 transition-all group flex flex-col items-center text-center">
-                                <img src="~/images/avatares/@user.Avatar" class="w-20 h-20 bg-white dark:bg-slate-900 rounded-3xl shadow-md mb-4 object-cover border-2 border-slate-100 dark:border-slate-700 transition-colors" />
-                                <span class="font-black text-slate-800 dark:text-white text-xl mb-6 transition-colors">@user.Nombre</span>
-                                <div class="flex gap-2 w-full">
-                                    <a asp-controller="Managed" asp-action="Perfil" asp-route-id="@user.IdUsuario" class="flex-grow py-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">Perfil</a>
-                                    <a asp-controller="Social" asp-action="EnviarInvitacion" asp-route-idDestino="@user.IdUsuario" class="flex-grow py-3 bg-indigo-600 text-white rounded-2xl text-lg shadow-lg hover:bg-indigo-700 transition-all"><i class="bi bi-person-plus-fill"></i></a>
-                                </div>
-                            </div>
-                        }
-                    }
+                @* LE HEMOS PUESTO UN ID A ESTE DIV PARA PODER INYECTAR LOS RESULTADOS DESDE JS *@
+                <div id="contenedor-resultados" class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 </div>
             </div>
 
@@ -372,7 +362,6 @@
 <script>
     // Sistema de Pestañas
     function toggleTab(tabName) {
-        const isDark = document.documentElement.classList.contains('dark');
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -418,40 +407,34 @@
         const bgColor = isDark ? '#0f172a' : '#ffffff';
         const textColor = isDark ? '#f8fafc' : '#1e293b';
 
-        // Primera advertencia
         Swal.fire({
             title: '¿Destruir tu cuenta?',
-            text: "Esta acción es irreversible. Se perderán tus datos y tus cuestionarios pasarán a ser de la comunidad.",
+            text: "Esta acción es irreversible. Se perderán tus datos.",
             icon: 'warning',
             background: bgColor,
             color: textColor,
             showCancelButton: true,
-            confirmButtonColor: '#e11d48', // rose-600
-            cancelButtonColor: '#64748b', // slate-500
+            confirmButtonColor: '#e11d48',
             confirmButtonText: 'Sí, iniciar purga',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // SEGUNDA CONFIRMACIÓN - Escribir palabra de seguridad
                 Swal.fire({
                     title: '¡ÚLTIMO AVISO!',
-                    text: "¿Estás ABSOLUTAMENTE seguro? Escribe 'CONFIRMAR' para aniquilar la cuenta.",
+                    text: "Escribe 'CONFIRMAR' para aniquilar la cuenta.",
                     input: 'text',
                     icon: 'error',
                     background: bgColor,
                     color: textColor,
                     showCancelButton: true,
-                    confirmButtonText: '<i class="bi bi-skull-fill"></i> ANIQUILAR',
-                    cancelButtonText: 'Me he arrepentido',
-                    confirmButtonColor: '#9f1239', // rose-800 (rojo más oscuro)
+                    confirmButtonText: 'ANIQUILAR',
                     preConfirm: (inputValue) => {
                         if (inputValue !== 'CONFIRMAR') {
-                            Swal.showValidationMessage('Debes escribir CONFIRMAR exactamente en mayúsculas.');
+                            Swal.showValidationMessage('Debes escribir CONFIRMAR en mayúsculas.');
                         }
                     }
                 }).then((secondResult) => {
                     if (secondResult.isConfirmed) {
-                        // Enviamos el formulario silencioso de POST
                         document.getElementById('form-borrar-cuenta').submit();
                     }
                 });
@@ -459,8 +442,64 @@
         });
     }
 
+    // --- INICIO LÓGICA DE BÚSQUEDA ---
+    async function ejecutarBusquedaUsuarios(event) {
+        // Evitamos la recarga de la página (comportamiento por defecto del submit)
+        event.preventDefault();
+
+        const inputBusqueda = document.getElementsByName("buscar")[0];
+        const textoBusqueda = inputBusqueda.value;
+        const contenedorResultados = document.querySelector("#content-social .grid-cols-1.sm\\:grid-cols-2");
+
+        if (textoBusqueda.length < 3) return;
+
+        // Feedback visual de carga
+        contenedorResultados.innerHTML = `
+            <div class="col-span-2 text-center py-10 animate-pulse">
+                <i class="bi bi-search text-4xl text-indigo-500 mb-2"></i>
+                <p class="text-xs font-black uppercase tracking-widest">Escaneando red de aliados...</p>
+            </div>`;
+
+        try {
+            const response = await fetch(`/Managed/BuscarUsuarios?textoBusqueda=${encodeURIComponent(textoBusqueda)}`);
+            const usuarios = await response.json();
+
+            contenedorResultados.innerHTML = ""; // Limpiamos
+
+            if (usuarios.length === 0) {
+                contenedorResultados.innerHTML = `<div class="col-span-2 text-center py-10 opacity-50 italic">No se encontraron resultados.</div>`;
+                return;
+            }
+
+            // Mapeo manual con tipado explícito para construir las tarjetas
+            usuarios.forEach((user) => {
+                const cardHtml = `
+                    <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] border-2 border-transparent hover:border-indigo-100 dark:hover:border-indigo-500/50 transition-all group flex flex-col items-center text-center animate__animated animate__fadeIn">
+                        <img src="/images/avatares/${user.avatar}" class="w-20 h-20 bg-white dark:bg-slate-900 rounded-3xl shadow-md mb-4 object-cover border-2 border-slate-100 dark:border-slate-700" />
+                        <span class="font-black text-slate-800 dark:text-white text-xl mb-6">${user.nombre}</span>
+                        <div class="flex gap-2 w-full">
+                            <a href="/Managed/Perfil/${user.idUsuario}" class="flex-grow py-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">Perfil</a>
+                            <a href="/Social/EnviarInvitacion?idDestino=${user.idUsuario}" class="flex-grow py-3 bg-indigo-600 text-white rounded-2xl text-lg shadow-lg hover:bg-indigo-700 transition-all"><i class="bi bi-person-plus-fill"></i></a>
+                        </div>
+                    </div>`;
+                contenedorResultados.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+        } catch (error) {
+            console.error("Error en búsqueda:", error);
+            contenedorResultados.innerHTML = `<div class="col-span-2 text-center text-rose-500 font-bold">Error al conectar con el servidor.</div>`;
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
+        // Inicializar pestaña
         let tabActiva = '@(ViewBag.TabActiva ?? "stats")';
         toggleTab(tabActiva);
+
+        // Vincular el formulario de búsqueda al motor AJAX
+        const formSocial = document.querySelector("#content-social form");
+        if (formSocial) {
+            formSocial.addEventListener("submit", ejecutarBusquedaUsuarios);
+        }
     });
 </script>

@@ -281,5 +281,36 @@ namespace ProyectoPersonal.Controllers
                 return View();
             }
         }
+        [AuthorizeUsuario]
+        [HttpGet]
+        public IActionResult CambiarPassword()
+        {
+            return View();
+        }
+
+        [AuthorizeUsuario]
+        [HttpPost]
+        public async Task<IActionResult> CambiarPassword(string oldPassword, string newPassword)
+        {
+            string username = User.Identity.Name;
+            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            Usuario usuarioValido = await this.repo.LoginUsuarioAsync(username, oldPassword);
+
+            if (usuarioValido == null)
+            {
+                ViewData["ERROR"] = "La contraseña actual no es correcta. Operación cancelada.";
+                return View();
+            }
+
+            string salt = HelperCryptography.GenerarSalt();
+            string passwordConSalt = newPassword + salt;
+            string passwordHash = HelperCryptography.EncriptarTextoBasico(passwordConSalt);
+
+            await this.repo.CambiarPasswordDesdePerfilAsync(idUsuario, newPassword, passwordHash, salt);
+
+            ViewData["MENSAJE"] = "¡Tu contraseña ha sido actualizado con éxito!";
+            return View(); ;
+        }
     }
 }

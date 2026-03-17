@@ -33,7 +33,7 @@
                     </div>
 
                     @* Botón de Iniciar (3D Arcade) *@
-                    <form asp-action="EmpezarPartida" method="post">
+                    <form asp-controller="SalasMultijugador" asp-action="EmpezarPartida" method="post">
                         <input type="hidden" name="idSala" value="@Model.IdSala" />
                         <input type="hidden" name="codigo" value="@Model.CodigoSala" />
                         <button type="submit" id="btn-empezar-main"
@@ -107,7 +107,7 @@
                         {
                             <div class="text-center py-16 opacity-30 flex flex-col items-center">
                                 <i class="bi bi-radar text-6xl mb-4 animate-[spin_4s_linear_infinite]"></i>
-                                <p class="text-[10px] font-black uppercase tracking-widest text-white">Ningún aliado detectado en el radar</p>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-white">Ningún amigo detectado en el radar</p>
                             </div>
                         }
                     </div>
@@ -145,7 +145,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             // 1. GENERAR CÓDIGO QR
-            const urlAcceso = window.location.origin + "/Trivial/Unirse?codigoSala=@Model.CodigoSala";
+            const urlAcceso = window.location.origin + "/SalasMultijugador/Unirse?codigoSala=@Model.CodigoSala";
             new QRCode(document.getElementById("qrcode"), {
                 text: urlAcceso,
                 width: 160,
@@ -163,7 +163,7 @@
 
             async function actualizarLobby() {
                 try {
-                    const response = await fetch(`/Trivial/ActualizarParticipantes?codigoPartida=@Model.CodigoSala`);
+                    const response = await fetch(`/Datos/ActualizarParticipantes?codigoPartida=@Model.CodigoSala`);
                     if (!response.ok) throw new Error("Error en la conexión");
 
                     const participantes = await response.json();
@@ -235,7 +235,7 @@
                 formData.append("nombreAmigo", nombreAmigo);
                 formData.append("codigoSala", "@Model.CodigoSala");
 
-                const response = await fetch("/Trivial/EnviarInvitacionPartida", {
+                const response = await fetch("/SalasMultijugador/EnviarInvitacionPartida", {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: formData

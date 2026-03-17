@@ -55,7 +55,7 @@ namespace ProyectoPersonal.Controllers
 
             if (sala.TipoJuego == "quizz") // Asegúrate de guardar el tipo en la DB al crear la sala
             {
-                return RedirectToAction("PreguntasQuizz", new
+                return RedirectToAction("PreguntasQuizz","Partidas", new
                 {
                     nombreCuestionario = sala.NombreCuestionario,
                     cantidad = 10,
@@ -65,7 +65,7 @@ namespace ProyectoPersonal.Controllers
             }
             else
             {
-                return RedirectToAction("PreguntasTrivial", new
+                return RedirectToAction("PreguntasTrivial", "Partidas", new
                 {
                     nombreCuestionario = sala.NombreCuestionario,
                     cantidad = sala.CantidadPreguntas,
