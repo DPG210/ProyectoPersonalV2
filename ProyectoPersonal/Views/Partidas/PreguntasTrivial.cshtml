@@ -1,0 +1,594 @@
+﻿@model List<int>
+
+@if (Model != null && Model.Any())
+{
+    <div class="max-w-4xl mx-auto px-4 py-6 font-sans">
+
+        @* BOTÓN DE REPORTE SUTIL *@
+        <div class="flex justify-end mb-4">
+            <button onclick="abrirModalReporte()" class="text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 transition-colors flex items-center gap-2 text-xs font-bold bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 px-4 py-2 rounded-full shadow-sm border border-slate-100 dark:border-slate-700" title="Reportar error en la pregunta">
+                <i class="bi bi-flag-fill"></i> ¿Hay algún error?
+            </button>
+        </div>
+
+        @* --- HUD: CABECERA DE JUEGO (Reloj y progreso) --- *@
+        <div id="header-stats" class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl shadow-indigo-100/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-700 p-6 mb-8 hidden relative overflow-hidden transition-colors duration-300">
+            <div class="absolute top-0 left-0 w-full h-2 bg-slate-50 dark:bg-slate-900">
+                <div id="barra-progreso" class="bg-gradient-to-r from-violet-500 to-fuchsia-500 h-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(168,85,247,0.5)]" style="width: 0%"></div>
+            </div>
+
+            <div class="flex items-center justify-between mt-2">
+                @* Izquierda: Progreso *@
+                <div class="flex flex-col items-center w-1/3 text-center">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Progreso</span>
+                    <span id="progreso" class="px-3 md:px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm md:text-lg font-black shadow-inner whitespace-nowrap transition-colors">
+                        1 / @Model.Count
+                    </span>
+                </div>
+
+                @* Centro: El Gran Reloj *@
+                <div class="relative w-32 h-32 flex flex-col items-center justify-center w-1/3 transform hover:scale-105 transition-transform">
+                    <div id="timer-number" class="absolute inset-0 flex items-center justify-center text-5xl font-black text-slate-800 dark:text-white drop-shadow-sm z-10 transition-colors">--</div>
+                    <svg class="transform -rotate-90 w-32 h-32 drop-shadow-md">
+                        <circle cx="64" cy="64" r="56" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-100 dark:text-slate-700 transition-colors" />
+                        <circle id="timer-bar" cx="64" cy="64" r="56" stroke="currentColor" stroke-width="12" fill="transparent"
+                                stroke-dasharray="352" stroke-dashoffset="0" stroke-linecap="round"
+                                class="text-violet-600 transition-all duration-1000 ease-linear" />
+                    </svg>
+                </div>
+
+                @* Derecha: Puntuación *@
+                <div class="flex flex-col items-center w-1/3 text-center">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Aciertos</span>
+                    <span id="aciertos-count" class="px-3 md:px-4 py-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-xl text-sm md:text-lg font-black shadow-inner flex items-center gap-2 whitespace-nowrap transition-colors">
+                        <i class="bi bi-star-fill text-emerald-400"></i> 0
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        @* --- CONTENEDOR PRINCIPAL DEL JUEGO --- *@
+        <div id="juego-container">
+
+            @* PANTALLA DE CARGA *@
+            <div id="pantalla-carga" class="text-center py-24 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 transition-colors duration-300">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-3xl mb-6 animate-bounce shadow-inner transition-colors">
+                    <i class="bi bi-keyboard-fill text-5xl"></i>
+                </div>
+                <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Preparando escritura...</h2>
+                <p class="text-slate-500 dark:text-slate-400 font-bold mt-2 animate-pulse">Afila tus dedos</p>
+            </div>
+
+            @* LA TARJETA DE PREGUNTA *@
+            <div id="tarjeta-pregunta" class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl shadow-indigo-100/60 dark:shadow-black/60 border border-slate-100 dark:border-slate-700 p-6 md:p-10 hidden transition-all duration-300 relative overflow-hidden">
+
+                @* Decoración sutil de fondo *@
+                <div class="absolute -right-10 -top-10 text-9xl text-slate-50 dark:text-slate-700/30 opacity-50 pointer-events-none transition-colors">
+                    <i class="bi bi-quote"></i>
+                </div>
+
+                <div class="flex justify-between items-center mb-8 relative z-10">
+                    <span class="text-violet-600 dark:text-violet-400 font-black text-xl drop-shadow-sm flex items-center gap-2 transition-colors">
+                        <span class="bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 p-2 rounded-lg text-sm"><i class="bi bi-pencil-square"></i></span>
+                        Escritura <span id="numero-pregunta-UI" class="text-slate-400 dark:text-slate-500">#1</span>
+                    </span>
+                    <span id="nivel-UI" class="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-black uppercase flex items-center gap-1 shadow-sm transition-colors">
+                        <i class="bi bi-lightning-charge-fill"></i> Nivel --
+                    </span>
+                </div>
+
+                @* ÁREA DE FEEDBACK (Oculta hasta responder) *@
+                <div id="feedback-UI" class="hidden mb-8 relative z-10" style="opacity:0; transition: opacity 0.3s;">
+
+                    @* Este div recibe sus clases de fondo dinámicamente, por eso no se las pongo aquí *@
+                    <div id="alert-feedback-UI" class="p-6 rounded-3xl border-4 mb-4 shadow-sm text-center">
+                        <h5 class="font-black text-slate-800 dark:text-slate-200 mb-2 uppercase tracking-widest text-sm opacity-60 transition-colors">Resultado</h5>
+                        <p id="texto-feedback-UI" class="text-2xl font-black text-slate-800 dark:text-white mb-0 transition-colors"></p>
+                    </div>
+
+                    @* Apelación (Sistema de Reclamación) *@
+                    <div id="area-apelacion-UI" class="hidden text-center mb-6 bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 transition-colors">
+                        <p class="text-sm font-bold text-slate-500 dark:text-slate-400 mb-3"><i class="bi bi-robot"></i> ¿Crees que el sistema se ha equivocado?</p>
+                        <button type="button" id="btn-apelar-UI" class="w-full sm:w-auto bg-amber-400 hover:bg-amber-500 text-white font-black py-3 px-8 rounded-xl shadow-lg transition-transform hover:-translate-y-1 active:scale-95 flex justify-center items-center gap-2 mx-auto">
+                            <i class="bi bi-shield-check text-xl"></i> RECLAMAR MI PUNTO
+                        </button>
+                    </div>
+
+                    @* Explicación *@
+                    <div class="bg-indigo-50/50 dark:bg-indigo-900/20 p-6 rounded-3xl border-2 border-indigo-100 dark:border-indigo-800/50 mb-6 relative overflow-hidden transition-colors">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-300 dark:bg-indigo-600"></div>
+                        <h6 class="font-black text-indigo-900 dark:text-indigo-300 mb-2 text-sm uppercase tracking-widest flex items-center gap-2">
+                            <i class="bi bi-journal-text text-indigo-500 dark:text-indigo-400 text-lg"></i> La respuesta completa
+                        </h6>
+                        <p id="explicacion-UI" class="text-base text-indigo-950/80 dark:text-indigo-100/80 font-medium leading-relaxed mb-0"></p>
+                    </div>
+
+                    @* Botón Continuar Solo *@
+                    <button type="button" id="btn-siguiente-manual-UI" class="w-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-5 text-xl rounded-2xl shadow-xl transition-transform transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
+                        SIGUIENTE PREGUNTA <i class="bi bi-arrow-right-circle-fill text-2xl"></i>
+                    </button>
+
+                    @* Contenedor Sync Multijugador *@
+                    <div id="sync-container-UI" class="hidden mt-4"></div>
+
+                    <hr class="mt-10 border-slate-200 dark:border-slate-700 border-dashed border-t-4 rounded-full transition-colors">
+                </div>
+
+                @* ENUNCIADO DE LA PREGUNTA *@
+                <h2 id="enunciado-UI" class="text-2xl md:text-4xl font-black text-slate-800 dark:text-white mb-10 text-center leading-tight relative z-10 transition-colors">
+                    Cargando pregunta...
+                </h2>
+
+                @* ÁREA DE INPUT DE RESPUESTA *@
+                <div class="input-grupo-respuesta relative z-10" id="input-area-UI">
+                    <div class="relative group">
+                        <input type="text"
+                               id="respuesta-usuario-UI"
+                               class="w-full text-center text-3xl font-black text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 bg-slate-50 dark:bg-slate-900 border-4 border-slate-200 dark:border-slate-700 rounded-[2rem] py-6 px-6 focus:outline-none focus:border-violet-500 dark:focus:border-violet-400 focus:bg-white dark:focus:bg-slate-800 focus:shadow-[0_0_30px_rgba(139,92,246,0.2)] transition-all mb-6"
+                               placeholder="Teclea tu respuesta..."
+                               autocomplete="off" />
+
+                        @* Pequeño icono flotante que aparece al escribir *@
+                        <div class="absolute right-6 top-1/2 -translate-y-[18px] text-slate-300 dark:text-slate-600 hidden group-focus-within:block transition-all">
+                            <i class="bi bi-cursor-text text-2xl"></i>
+                        </div>
+                    </div>
+
+                    <button type="button"
+                            id="btn-comprobar-UI"
+                            class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-black py-5 text-2xl rounded-[2rem] shadow-[0_8px_0_rgb(124,58,237)] hover:shadow-[0_6px_0_rgb(124,58,237)] hover:translate-y-[2px] active:shadow-none active:translate-y-[8px] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="bi bi-send-check-fill text-3xl"></i> ENVIAR RESPUESTA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @* --- PANTALLA FINAL ÉPICA --- *@
+        <div id="fin-juego" class="hidden">
+            <div class="bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-700 p-10 md:p-16 text-center relative overflow-hidden transition-colors duration-300">
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-300 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-fuchsia-500 rounded-full blur-3xl opacity-10"></div>
+
+                <div class="relative z-10">
+                    <div class="w-32 h-32 bg-gradient-to-br from-yellow-300 to-amber-500 text-white rounded-full flex items-center justify-center mx-auto mb-8 text-6xl shadow-[0_10px_30px_-10px_rgba(245,158,11,0.7)] border-4 border-white dark:border-slate-800 transition-colors">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <h2 class="text-5xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">¡Misión Cumplida!</h2>
+                    <p class="text-slate-500 dark:text-slate-400 font-bold text-lg mb-10">Veamos tu puntuación de escritura.</p>
+
+                    <div id="resultado-resumen" class="mb-10 text-lg w-full max-w-md mx-auto"></div>
+
+                    <a asp-action="Index" class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 px-12 rounded-2xl shadow-xl transition-transform hover:-translate-y-1 text-lg">
+                        <i class="bi bi-house-door-fill"></i> VOLVER AL INICIO
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @* --- MODAL DE REPORTE --- *@
+    <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-all border border-transparent dark:border-slate-700">
+            <div class="bg-rose-500 p-5 text-white flex justify-between items-center">
+                <h3 class="font-black text-lg flex items-center gap-2"><i class="bi bi-shield-exclamation text-xl"></i> Reportar Problema</h3>
+                <button onclick="cerrarModalReporte()" class="text-white/80 hover:text-white font-black text-2xl transition-colors">&times;</button>
+            </div>
+            <div class="p-8 space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Motivo del reporte:</label>
+                    <select id="motivoReporte" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-500 dark:focus:border-rose-500 outline-none font-bold text-slate-700 dark:text-slate-200 cursor-pointer transition-colors">
+                        <option value="Respuesta incorrecta">El sistema no validó mi respuesta correcta</option>
+                        <option value="Falta de ortografía">Pregunta mal redactada o confusa</option>
+                        <option value="Otro">Otro motivo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Cuéntanos más:</label>
+                    <textarea id="comentarioReporte" rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-500 dark:focus:border-rose-500 outline-none resize-none text-slate-700 dark:text-slate-200 transition-colors" placeholder="Mi respuesta exacta fue..."></textarea>
+                </div>
+                <button onclick="enviarReporte()" id="btnEnviarReporte" class="w-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg">
+                    Enviar Reporte
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // --- AUDIO ENGINE ---
+        const soundCorrect = new Audio('/sounds/acierto.mp3');
+        const soundWrong = new Audio('/sounds/fallo.mp3');
+        soundCorrect.volume = 0.5;
+        soundWrong.volume = 0.4;
+
+        function playSound(isCorrect) {
+            try {
+                if (isCorrect) {
+                    soundCorrect.currentTime = 0;
+                    soundCorrect.play().catch(e => console.log("Audio bloqueado", e));
+                } else {
+                    soundWrong.currentTime = 0;
+                    soundWrong.play().catch(e => console.log("Audio bloqueado", e));
+                }
+            } catch(e) {}
+        }
+
+        // --- 1. CONFIGURACIÓN Y VARIABLES ---
+        const tiempoConfigurado = @(ViewBag.Tiempo != null && ViewBag.Tiempo > 0 ? ViewBag.Tiempo : 30);
+        const partidaId         = @(ViewBag.PartidaId ?? 0);
+        const esModoMulti       = partidaId > 0;
+
+        // Variables para el Auto-Paso
+        let timeoutAutoPaso;
+        let intervaloAutoPaso;
+
+        let conexionSignalR=null;
+        if(esModoMulti){
+            conexionSignalR = new signalR.HubConnectionBuilder().withUrl("/trivialHub").build();
+            conexionSignalR.start().then(()=>{
+                conexionSignalR.invoke("UnirseAPartida", partidaId.toString());
+            }).catch(err => console.error("🔴 Error SignalR:", err));
+
+            conexionSignalR.on("TodosListos", (ranking) => {
+                mostrarRankingIntermedio(ranking);
+            });
+
+            conexionSignalR.on("TodosAvanzaron", () => {
+                indexActual++;
+                cargarPreguntaActual();
+            });
+        }
+
+        const idsPreguntas = @Html.Raw(Json.Serialize(Model));
+        let totalPreguntas   = idsPreguntas.length;
+        let indexActual      = 0;
+        let contadorAciertos = 0;
+        let timerInterval;
+        let segundosRestantes;
+        let respondido = false;
+        let pasando    = false;
+        let idPreguntaActualReporte = 0;
+
+        const timerNumber      = document.getElementById("timer-number");
+        const timerBar         = document.getElementById("timer-bar");
+        const aciertosCount    = document.getElementById("aciertos-count");
+        const barraProgreso    = document.getElementById("barra-progreso");
+        const progresoTexto    = document.getElementById("progreso");
+        const juegoContainer   = document.getElementById("juego-container");
+        const finJuego         = document.getElementById("fin-juego");
+        const resultadoResumen = document.getElementById("resultado-resumen");
+        const tarjetaPregunta  = document.getElementById("tarjeta-pregunta");
+        const inputUsuario     = document.getElementById("respuesta-usuario-UI");
+        const btnComprobar     = document.getElementById("btn-comprobar-UI");
+        const btnSiguienteManual = document.getElementById("btn-siguiente-manual-UI");
+
+        // --- FUNCIONALIDAD AUTO-PASO ---
+        function iniciarAutoPaso(esBotonRanking = false) {
+            clearTimeout(timeoutAutoPaso);
+            clearInterval(intervaloAutoPaso);
+
+            let segundosParaAvanzar = 10;
+
+            intervaloAutoPaso = setInterval(() => {
+                segundosParaAvanzar--;
+                if (esBotonRanking) {
+                    const btn = document.querySelector(".btn-continuar-ranking");
+                    if (btn) btn.innerHTML = `Siguiente pregunta (${segundosParaAvanzar}s) <i class="bi bi-arrow-right-short ml-1"></i>`;
+                } else {
+                    if (btnSiguienteManual) btnSiguienteManual.innerHTML = `SIGUIENTE PREGUNTA (${segundosParaAvanzar}s) <i class="bi bi-arrow-right-circle-fill text-2xl"></i>`;
+                }
+            }, 1000);
+
+            timeoutAutoPaso = setTimeout(() => {
+                pasarSiguiente();
+            }, 10000);
+        }
+
+        // --- 2. SISTEMA AJAX DE CARGA ---
+        async function cargarPreguntaActual() {
+            // Limpiamos rastros de auto-paso anterior
+            clearTimeout(timeoutAutoPaso);
+            clearInterval(intervaloAutoPaso);
+            btnSiguienteManual.innerHTML = `SIGUIENTE PREGUNTA <i class="bi bi-arrow-right-circle-fill text-2xl"></i>`;
+
+            if (indexActual >= totalPreguntas) {
+                finalizarJuego();
+                return;
+            }
+
+            respondido = false;
+            btnComprobar.disabled = false;
+            btnComprobar.innerHTML = `<i class="bi bi-send-check-fill text-3xl"></i> ENVIAR RESPUESTA`;
+
+            if(indexActual === 0) {
+                document.getElementById("pantalla-carga").classList.remove("hidden");
+                tarjetaPregunta.classList.add("hidden");
+            } else {
+                tarjetaPregunta.style.opacity = 0.5;
+                tarjetaPregunta.style.pointerEvents = "none";
+            }
+
+            idPreguntaActualReporte = idsPreguntas[indexActual];
+
+            try {
+                const response = await fetch('/Trivial/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
+                const p = await response.json();
+
+                if (p.success) {
+                    document.getElementById("numero-pregunta-UI").innerText = "#" + (indexActual + 1);
+                    document.getElementById("nivel-UI").innerText = "Nivel " + p.nivel;
+                    document.getElementById("enunciado-UI").innerText = p.enunciado;
+                    document.getElementById("explicacion-UI").innerText = p.explicacion || "No hay explicación adicional.";
+
+                    inputUsuario.value = "";
+                    document.getElementById("input-area-UI").classList.remove("hidden");
+                    document.getElementById("feedback-UI").classList.add("hidden");
+                    document.getElementById("area-apelacion-UI").classList.add("hidden");
+                    document.getElementById("btn-siguiente-manual-UI").classList.remove("hidden");
+
+                    const syncDiv = document.getElementById("sync-container-UI");
+                    syncDiv.classList.add("hidden");
+                    syncDiv.innerHTML = "";
+
+                    progresoTexto.textContent = `${indexActual + 1} / ${totalPreguntas}`;
+                    barraProgreso.style.width = `${((indexActual + 1) / totalPreguntas) * 100}%`;
+
+                    document.getElementById("pantalla-carga").classList.add("hidden");
+                    document.getElementById("header-stats").classList.remove("hidden");
+                    tarjetaPregunta.classList.remove("hidden");
+                    tarjetaPregunta.style.opacity = 1;
+                    tarjetaPregunta.style.pointerEvents = "auto";
+
+                    pasando = false;
+                    iniciarTemporizador();
+                    inputUsuario.focus();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        // --- 3. TEMPORIZADOR ---
+        function iniciarTemporizador() {
+            respondido = false;
+            pasando    = false;
+            clearInterval(timerInterval);
+            segundosRestantes = tiempoConfigurado;
+            actualizarUI();
+
+            timerInterval = setInterval(() => {
+                segundosRestantes--;
+                actualizarUI();
+                if (segundosRestantes <= 0) {
+                    clearInterval(timerInterval);
+                    if (!respondido) finalizarPorTiempo();
+                }
+            }, 1000);
+        }
+
+        function actualizarUI() {
+            timerNumber.textContent = segundosRestantes;
+            timerBar.style.strokeDashoffset = 352 - (segundosRestantes / tiempoConfigurado) * 352;
+
+            if (segundosRestantes <= 3) {
+                timerNumber.classList.add("text-rose-500");
+                timerBar.classList.remove("text-violet-600");
+                timerBar.classList.add("text-rose-500");
+            } else {
+                timerNumber.classList.remove("text-rose-500");
+                timerBar.classList.remove("text-rose-500");
+                timerBar.classList.add("text-violet-600");
+            }
+        }
+
+        function finalizarPorTiempo() {
+            respondido = true;
+            document.getElementById("input-area-UI").classList.add("hidden");
+            const feedback = document.getElementById("feedback-UI");
+            feedback.classList.remove("hidden");
+            feedback.style.opacity = 1;
+
+            document.getElementById("alert-feedback-UI").className = "p-4 rounded-2xl border mb-4 bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700";
+            document.getElementById("texto-feedback-UI").innerHTML = "¡Tiempo agotado! ⏳";
+
+            playSound(false);
+            notificarRespuesta(false);
+            if (!esModoMulti) iniciarAutoPaso(false);
+        }
+
+        // --- 4. COMPROBACIÓN ---
+        btnComprobar.addEventListener("click", () => {
+            if (respondido) return;
+            const texto = inputUsuario.value.trim();
+            if (!texto) return;
+            comprobarRespuestaServidor(texto);
+        });
+
+        inputUsuario.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                if (respondido) return;
+                const texto = inputUsuario.value.trim();
+                if (texto) comprobarRespuestaServidor(texto);
+            }
+        });
+
+        async function comprobarRespuestaServidor(texto) {
+            clearInterval(timerInterval);
+            respondido = true;
+            btnComprobar.disabled = true;
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append("idPregunta", idPreguntaActualReporte);
+                formData.append("respuestaUsuario", texto);
+
+                const response = await fetch("/Trivial/ValidarPregunta", { method: "POST", body: formData });
+                const data = await response.json();
+
+                document.getElementById("input-area-UI").classList.add("hidden");
+                const feedback = document.getElementById("feedback-UI");
+                feedback.classList.remove("hidden");
+                feedback.style.opacity = 1;
+
+                const alertFeedback = document.getElementById("alert-feedback-UI");
+                const textoFeedback = document.getElementById("texto-feedback-UI");
+                let esCorrecta = false;
+
+                if (data.status === "SUCCESS") {
+                    alertFeedback.className = "p-4 rounded-2xl border mb-4 bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-700";
+                    textoFeedback.innerHTML = data.mensaje;
+                    sumarAcierto();
+                    playSound(true);
+                    esCorrecta = true;
+                } else if (data.status === "REVISION") {
+                    alertFeedback.className = "p-4 rounded-2xl border mb-4 bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700";
+                    textoFeedback.innerHTML = `La respuesta correcta es: <b>${data.respuestaCorrecta}</b>`;
+                    document.getElementById("area-apelacion-UI").classList.remove("hidden");
+                    playSound(false);
+                } else {
+                    alertFeedback.className = "p-4 rounded-2xl border mb-4 bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-700";
+                    textoFeedback.innerHTML = `Incorrecto. Era: <b>${data.respuestaCorrecta || "Desconocida"}</b>`;
+                    playSound(false);
+                }
+
+                notificarRespuesta(esCorrecta);
+                if (!esModoMulti) iniciarAutoPaso(false);
+
+            } catch (error) { console.error(error); }
+        }
+
+        document.getElementById("btn-apelar-UI").addEventListener("click", () => {
+            sumarAcierto();
+            playSound(true);
+            document.getElementById("area-apelacion-UI").innerHTML = "<span class='text-emerald-600 dark:text-emerald-400 font-black'>¡Punto concedido!</span>";
+            if (esModoMulti) notificarRespuesta(true);
+        });
+
+        // --- 5. MULTI ---
+        async function notificarRespuesta(esCorrecta) {
+            if (!esModoMulti) return;
+            btnSiguienteManual.classList.add("hidden");
+            const syncDiv = document.getElementById("sync-container-UI");
+            syncDiv.classList.remove("hidden");
+            syncDiv.innerHTML = `<div class="text-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 transition-colors">
+                                    <div class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-indigo-500 border-t-transparent mr-2"></div>
+                                    <span class="text-slate-500 dark:text-slate-400 font-bold text-sm italic">Esperando rivales...</span>
+                                 </div>`;
+            try {
+                const formData = new URLSearchParams();
+                formData.append("partidaId", partidaId);
+                formData.append("indicePregunta", indexActual);
+                formData.append("esCorrecta", esCorrecta);
+                const response = await fetch("/Trivial/RegistrarRespuesta", { method: "POST", body: formData });
+                const data = await response.json();
+                if (data.todosListos) mostrarRankingIntermedio(data.ranking);
+            } catch (error) { console.error(error); }
+        }
+
+        function mostrarRankingIntermedio(ranking) {
+            let filas = "";
+            ranking.forEach((j, i) => {
+                const medalla = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`;
+                filas += `<div class="flex justify-between items-center p-3 border-b border-slate-100 dark:border-slate-700">
+                            <span class="text-sm font-bold text-slate-600 dark:text-slate-300">${medalla} ${j.nombre}</span>
+                            <span class="text-xs px-2 py-1 rounded-lg font-black bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">${j.puntos} pts</span>
+                         </div>`;
+            });
+
+            document.getElementById("sync-container-UI").innerHTML = `
+                <div class="mt-4 space-y-3 ranking-intermedio animate__animated animate__fadeIn">
+                    <p class="text-center font-black text-xs uppercase tracking-widest text-indigo-500">🏆 Ranking actual</p>
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm">${filas}</div>
+                    <button type="button" class="btn-continuar-ranking w-full bg-indigo-600 text-white py-3 rounded-xl font-black">
+                        Siguiente pregunta (10s) <i class="bi bi-arrow-right-short ml-1"></i>
+                    </button>
+                </div>`;
+
+            iniciarAutoPaso(true);
+        }
+
+        // --- 6. NAVEGACIÓN ---
+        function sumarAcierto() {
+            contadorAciertos++;
+            aciertosCount.innerHTML = `<i class="bi bi-star-fill text-emerald-400"></i> ${contadorAciertos}`;
+        }
+
+        btnSiguienteManual.addEventListener("click", pasarSiguiente);
+        document.addEventListener("click", (e) => {
+            if (e.target.closest(".btn-continuar-ranking")) pasarSiguiente();
+        });
+
+        async function pasarSiguiente() {
+            clearTimeout(timeoutAutoPaso);
+            clearInterval(intervaloAutoPaso);
+            if (pasando) return;
+            pasando = true;
+
+            if (!esModoMulti) {
+                indexActual++;
+                cargarPreguntaActual();
+                return;
+            }
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append("partidaId", partidaId);
+                formData.append("nuevoIndice", indexActual + 1);
+                await fetch("/Trivial/AvanzarPregunta", { method: "POST", body: formData });
+            } catch (error) { console.error(error); pasando = false; }
+        }
+
+        // --- 7. FIN JUEGO ---
+        async function finalizarJuego() {
+            clearInterval(timerInterval);
+            clearTimeout(timeoutAutoPaso);
+            clearInterval(intervaloAutoPaso);
+            juegoContainer.style.opacity = 0;
+
+            if (!esModoMulti) {
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const nombreCuestionario = urlParams.get("nombreCuestionario");
+                    if (nombreCuestionario) {
+                        const formData = new URLSearchParams();
+                        formData.append("cuestionario", nombreCuestionario);
+                        formData.append("correctas", contadorAciertos);
+                        formData.append("totales", totalPreguntas);
+                        await fetch("/Trivial/GuardarPartidaIndividual", { method: "POST", body: formData });
+                    }
+                } catch (error) { console.error(error); }
+            }
+
+            setTimeout(async () => {
+                juegoContainer.classList.add("hidden");
+                document.getElementById("header-stats").classList.add("hidden");
+
+                if (esModoMulti) {
+                    const response = await fetch(`/Trivial/GetRankingFinal?partidaId=${partidaId}`);
+                    const ranking  = await response.json();
+                    let html = '<h5 class="font-black text-center mb-4 text-slate-800 dark:text-white">🏆 Clasificación Final</h5><div class="space-y-3">';
+                    ranking.forEach((j, i) => {
+                        const medalla = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`;
+                        html += `<div class="p-5 rounded-2xl border-2 flex justify-between items-center ${i === 0 ? "border-amber-200 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20" : "border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"}">
+                                    <span class="font-bold text-xl text-slate-800 dark:text-white">${medalla} ${j.nombre}</span>
+                                    <span class="font-black text-indigo-600 dark:text-indigo-400 text-xl">${j.puntos} pts</span>
+                                 </div>`;
+                    });
+                    resultadoResumen.innerHTML = html + "</div>";
+                } else {
+                    const nota = (contadorAciertos / totalPreguntas) * 10;
+                    resultadoResumen.innerHTML = `<div class="text-7xl font-black text-violet-600 dark:text-violet-400 mb-4 drop-shadow-md animate__animated animate__backInDown">${nota.toFixed(1)}</div>
+                                                  <p class="text-slate-500 dark:text-slate-400">Has acertado <strong class="dark:text-white">${contadorAciertos}</strong> de ${totalPreguntas} preguntas.</p>`;
+                }
+                finJuego.classList.remove("hidden");
+            }, 300);
+        }
+
+        // ARRANQUE
+        if(totalPreguntas > 0) cargarPreguntaActual();
+    });
+</script>

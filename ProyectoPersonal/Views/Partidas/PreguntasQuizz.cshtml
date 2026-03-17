@@ -1,0 +1,650 @@
+﻿@model List<int>
+
+@if (Model != null && Model.Any())
+{
+    <div class="max-w-4xl mx-auto px-4 py-6 font-sans">
+
+        @* BOTÓN DE REPORTE SUTIL *@
+        <div class="flex justify-end mb-4">
+            <button onclick="abrirModalReporte()" class="text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 transition-colors flex items-center gap-2 text-xs font-bold bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 px-4 py-2 rounded-full shadow-sm border border-slate-100 dark:border-slate-700" title="Reportar error en la pregunta">
+                <i class="bi bi-flag-fill"></i> ¿Hay algún error?
+            </button>
+        </div>
+
+        @* --- HUD: CABECERA DE JUEGO (Reloj y progreso) --- *@
+        <div id="header-stats" class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl shadow-indigo-100/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-700 p-6 mb-8 hidden relative overflow-hidden transition-colors duration-300">
+            <div class="absolute top-0 left-0 w-full h-2 bg-slate-50 dark:bg-slate-900">
+                <div id="barra-progreso" class="bg-gradient-to-r from-violet-500 to-fuchsia-500 h-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(168,85,247,0.5)]" style="width: 0%"></div>
+            </div>
+
+            <div class="flex items-center justify-between mt-2">
+                @* Izquierda: Progreso *@
+                <div class="flex flex-col items-center w-1/3">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Ronda</span>
+                    <span id="progreso-badge" class="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-lg font-black shadow-inner transition-colors">
+                        1 / @Model.Count
+                    </span>
+                    <span id="progreso-texto" class="hidden">1 de @Model.Count</span>
+                </div>
+
+                @* Centro: El Gran Reloj *@
+                <div class="relative w-32 h-32 flex flex-col items-center justify-center w-1/3 transform hover:scale-105 transition-transform">
+                    <div id="timer-number" class="absolute inset-0 flex items-center justify-center text-5xl font-black text-slate-800 dark:text-white drop-shadow-sm z-10 transition-colors">--</div>
+                    <svg class="transform -rotate-90 w-32 h-32 drop-shadow-md">
+                        <circle cx="64" cy="64" r="56" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-100 dark:text-slate-700 transition-colors" />
+                        <circle id="timer-bar" cx="64" cy="64" r="56" stroke="currentColor" stroke-width="12" fill="transparent"
+                                stroke-dasharray="352" stroke-dashoffset="0" stroke-linecap="round"
+                                class="text-violet-600 transition-all duration-1000 ease-linear" />
+                    </svg>
+                </div>
+
+                @* Derecha: Puntuación *@
+                <div class="flex flex-col items-center w-1/3">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Aciertos</span>
+                    <span id="aciertos-badge" class="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-xl text-lg font-black shadow-inner flex items-center gap-2 transition-colors">
+                        <i class="bi bi-star-fill text-emerald-400"></i> <span id="contador-texto">0</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        @* --- CONTENEDOR PRINCIPAL DEL JUEGO --- *@
+        <div id="juego-container">
+
+            @* PANTALLA DE CARGA *@
+            <div id="pantalla-carga" class="text-center py-24 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 transition-colors duration-300">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-3xl mb-6 animate-bounce shadow-inner transition-colors">
+                    <i class="bi bi-controller text-5xl"></i>
+                </div>
+                <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Preparando el desafío...</h2>
+                <p class="text-slate-500 dark:text-slate-400 font-bold mt-2 animate-pulse">Calentando motores</p>
+            </div>
+
+            @* LA TARJETA DE PREGUNTA *@
+            <div id="tarjeta-pregunta" class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl shadow-indigo-100/60 dark:shadow-black/60 border border-slate-100 dark:border-slate-700 p-6 md:p-10 hidden transition-all duration-300">
+
+                <div class="flex justify-between items-center mb-6">
+                    <span id="numero-pregunta-UI" class="text-violet-600 dark:text-violet-400 font-black text-2xl drop-shadow-sm">#1</span>
+                    <span id="nivel-UI" class="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-black uppercase flex items-center gap-1 shadow-sm transition-colors">
+                        <i class="bi bi-lightning-charge-fill"></i> Nivel --
+                    </span>
+                </div>
+
+                @* ÁREA DE FEEDBACK *@
+                <div id="feedback-UI" class="hidden mb-10" style="opacity:0; transition: opacity 0.3s;">
+                    <div id="mensaje-resultado-UI" class="p-5 rounded-2xl font-black text-2xl text-center mb-6 shadow-sm border-2"></div>
+
+                    <div class="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border-2 border-slate-100 dark:border-slate-700 mb-6 relative overflow-hidden transition-colors">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-slate-300 dark:bg-slate-600"></div>
+                        <p class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2"><i class="bi bi-info-circle-fill"></i> El Dato curioso</p>
+                        <p id="explicacion-UI" class="text-slate-700 dark:text-slate-300 font-medium leading-relaxed"></p>
+                    </div>
+
+                    <button type="button" id="btn-siguiente-UI" class="w-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-5 text-xl rounded-2xl shadow-lg transition-transform transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
+                        SIGUIENTE PREGUNTA <i class="bi bi-chevron-double-right"></i>
+                    </button>
+
+                    <div id="espera-jugadores" class="hidden text-center mt-4 p-5 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl border-2 border-indigo-100 dark:border-indigo-800 transition-colors">
+                        <div class="inline-block animate-spin rounded-full h-6 w-6 border-4 border-indigo-500 border-t-transparent mr-3 align-middle"></div>
+                        <span class="text-indigo-800 dark:text-indigo-400 font-bold text-lg align-middle">Esperando a los rivales...</span>
+                    </div>
+
+                    <div id="ranking-intermedio-container"></div>
+
+                    <hr class="mt-10 border-slate-200 dark:border-slate-700 border-dashed border-t-4 rounded-full transition-colors">
+                </div>
+
+                @* PREGUNTA Y OPCIONES *@
+                <h2 id="enunciado-UI" class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white mb-10 leading-tight text-center px-4 transition-colors">
+                    Cargando pregunta...
+                </h2>
+
+                <div id="opciones-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 op-container mb-2">
+                    @* Se llena desde JS *@
+                </div>
+            </div>
+        </div>
+
+        @* --- PANTALLA FINAL ÉPICA --- *@
+        <div id="fin-juego" class="hidden">
+            <div class="bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-700 p-10 md:p-16 text-center relative overflow-hidden transition-colors duration-300">
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-300 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-indigo-500 rounded-full blur-3xl opacity-10"></div>
+
+                <div class="relative z-10">
+                    <div class="w-32 h-32 bg-gradient-to-br from-yellow-300 to-amber-500 text-white rounded-full flex items-center justify-center mx-auto mb-8 text-6xl shadow-[0_10px_30px_-10px_rgba(245,158,11,0.7)] border-4 border-white dark:border-slate-800 transition-colors">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <h2 class="text-5xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">¡Partida Finalizada!</h2>
+                    <p class="text-slate-500 dark:text-slate-400 font-bold text-lg mb-10">Veamos cómo has quedado en la tabla.</p>
+
+                    <div id="resultado-final-texto" class="mb-10 text-lg w-full max-w-md mx-auto"></div>
+
+                    <a asp-action="Index" class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 px-12 rounded-2xl shadow-xl transition-all hover:-translate-y-1 text-lg">
+                        <i class="bi bi-house-door-fill"></i> VOLVER AL INICIO
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @* --- MODAL DE REPORTE --- *@
+    <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-all border border-transparent dark:border-slate-700">
+            <div class="bg-rose-500 p-5 text-white flex justify-between items-center">
+                <h3 class="font-black text-lg flex items-center gap-2"><i class="bi bi-shield-exclamation text-xl"></i> Reportar Problema</h3>
+                <button onclick="cerrarModalReporte()" class="text-white/80 hover:text-white font-black text-2xl transition-colors">&times;</button>
+            </div>
+            <div class="p-8 space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">¿Qué ocurre con esta pregunta?</label>
+                    <select id="motivoReporte" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-500 dark:focus:border-rose-500 outline-none font-bold text-slate-700 dark:text-slate-200 cursor-pointer transition-colors">
+                        <option value="Respuesta incorrecta">La respuesta dada es errónea</option>
+                        <option value="Falta de ortografía">Está mal escrita o es confusa</option>
+                        <option value="Contenido ofensivo">Contenido inapropiado</option>
+                        <option value="Otro">Otro motivo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Cuéntanos más (opcional):</label>
+                    <textarea id="comentarioReporte" rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-500 dark:focus:border-rose-500 outline-none resize-none text-slate-700 dark:text-slate-200 transition-colors" placeholder="El dato correcto es..."></textarea>
+                </div>
+                <button onclick="enviarReporte()" id="btnEnviarReporte" class="w-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg">
+                    Enviar Reporte
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* --- ESTILOS 3D ADAPTADOS AL MODO OSCURO --- *@
+<style>
+    /* El modo oscuro a través de Tailwind se controla con .dark en html. Aquí usamos selectores manuales para apoyar. */
+    .btn-respuesta {
+        @@apply bg-white border-2 border-b-4 border-slate-200 text-slate-700 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-lg active:translate-y-0 active:border-b-2 active:mt-[2px] transition-all !important;
+    }
+
+    /* Variables oscuras para el botón base */
+    :root[class~="dark"] .btn-respuesta {
+        @@apply bg-slate-900 border-slate-700 border-b-slate-800 text-slate-200 hover:border-indigo-500 !important;
+    }
+
+    .btn-respuesta.bloqueado {
+        @@apply pointer-events-none opacity-90 !important;
+    }
+
+    /* Acierto (Claro y Oscuro) */
+    .btn-correct {
+        @@apply bg-emerald-50 border-emerald-500 border-b-emerald-600 text-emerald-900 translate-y-0 border-b-2 mt-[2px] shadow-none !important;
+    }
+
+    :root[class~="dark"] .btn-correct {
+        @@apply bg-emerald-950 /30 border-emerald-500 border-b-emerald-600 text-emerald-100 !important;
+    }
+
+    .btn-correct .letra-opcion {
+        @@apply bg-emerald-500 text-white !important;
+    }
+
+    /* Fallo (Claro y Oscuro) */
+    .btn-incorrect {
+        @@apply bg-rose-50 border-rose-500 border-b-rose-600 text-rose-900 translate-y-0 border-b-2 mt-[2px] shadow-none !important;
+    }
+
+    :root[class~="dark"] .btn-incorrect {
+        @@apply bg-rose-950 /30 border-rose-500 border-b-rose-600 text-rose-100 !important;
+    }
+
+    .btn-incorrect .letra-opcion {
+        @@apply bg-rose-500 text-white !important;
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // --- AUDIO ENGINE ---
+        const soundCorrect = new Audio('/sounds/acierto.mp3');
+        const soundWrong = new Audio('/sounds/fallo.mp3');
+        soundCorrect.volume = 0.5;
+        soundWrong.volume = 0.4;
+
+        function playSound(isCorrect) {
+            try {
+                if (isCorrect) {
+                    soundCorrect.currentTime = 0;
+                    soundCorrect.play().catch(e => console.log("Audio bloqueado", e));
+                } else {
+                    soundWrong.currentTime = 0;
+                    soundWrong.play().catch(e => console.log("Audio bloqueado", e));
+                }
+            } catch(e) {}
+        }
+
+        // --- 1. CONFIGURACIÓN Y VARIABLES ---
+        const tiempoConfigurado = @(ViewBag.Tiempo != null && ViewBag.Tiempo > 0 ? ViewBag.Tiempo : 30);
+        const partidaId = @(ViewBag.PartidaId ?? 0);
+        const esModoMulti = partidaId > 0;
+
+        // Variables para el Auto-Paso
+        let timeoutAutoPaso;
+        let intervaloAutoPaso;
+
+        let conexionSignalR = null;
+        if(esModoMulti){
+            conexionSignalR = new signalR.HubConnectionBuilder().withUrl("/trivialHub").build();
+            conexionSignalR.start().then(()=>{
+                conexionSignalR.invoke("UnirseAPartida", partidaId.toString());
+            }).catch(err => console.error("🔴 Error SignalR:", err));
+
+            conexionSignalR.on("TodosListos", (ranking) => {
+                mostrarRankingIntermedio(ranking);
+            });
+
+            conexionSignalR.on("TodosAvanzaron", () => {
+                indexActual++;
+                cargarPreguntaActual();
+            });
+        }
+
+        const idsPreguntas = @Html.Raw(Json.Serialize(Model));
+        let totalPreguntas = idsPreguntas.length;
+        let indexActual = 0;
+        let contadorAciertos = 0;
+        let timerInterval;
+        let segundosRestantes;
+        let respondido = false;
+        let pasando = false;
+        let idPreguntaActualReporte = 0;
+
+        // Referencias al DOM
+        const timerNumber = document.getElementById("timer-number");
+        const timerBar = document.getElementById("timer-bar");
+        const contadorTexto = document.getElementById("contador-texto");
+        const progresoBadge = document.getElementById("progreso-badge");
+        const barraProgreso = document.getElementById("barra-progreso");
+        const juegoContainer = document.getElementById("juego-container");
+        const finJuego = document.getElementById("fin-juego");
+        const resultadoFinalTexto = document.getElementById("resultado-final-texto");
+        const tarjetaPregunta = document.getElementById("tarjeta-pregunta");
+        const btnSiguienteUI = document.getElementById("btn-siguiente-UI");
+
+        // --- FUNCIONALIDAD AUTO-PASO ---
+        function iniciarAutoPaso(esBotonRanking = false) {
+            clearTimeout(timeoutAutoPaso);
+            clearInterval(intervaloAutoPaso);
+
+            let segundosParaAvanzar = 10;
+
+            intervaloAutoPaso = setInterval(() => {
+                segundosParaAvanzar--;
+                if (esBotonRanking) {
+                    const btn = document.querySelector(".btn-continuar-ranking");
+                    if (btn) btn.innerHTML = `Siguiente Ronda (${segundosParaAvanzar}s) <i class="bi bi-arrow-right-short ml-1 text-2xl"></i>`;
+                } else {
+                    if (btnSiguienteUI) btnSiguienteUI.innerHTML = `SIGUIENTE PREGUNTA (${segundosParaAvanzar}s) <i class="bi bi-chevron-double-right"></i>`;
+                }
+            }, 1000);
+
+            timeoutAutoPaso = setTimeout(() => {
+                pasarSiguiente();
+            }, 10000);
+        }
+
+        // --- 2. CARGA DE PREGUNTAS ---
+        async function cargarPreguntaActual() {
+            // Limpiamos los contadores de auto-paso al cargar nueva pregunta
+            clearTimeout(timeoutAutoPaso);
+            clearInterval(intervaloAutoPaso);
+            btnSiguienteUI.innerHTML = `SIGUIENTE PREGUNTA <i class="bi bi-chevron-double-right"></i>`;
+
+            if (indexActual >= totalPreguntas) {
+                mostrarResultadoFinal();
+                return;
+            }
+
+            if(indexActual === 0) {
+                document.getElementById("pantalla-carga").classList.remove("hidden");
+                tarjetaPregunta.classList.add("hidden");
+            } else {
+                tarjetaPregunta.style.opacity = 0.5;
+            }
+
+            idPreguntaActualReporte = idsPreguntas[indexActual];
+
+            try {
+                const response = await fetch('/Trivial/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
+                const p = await response.json();
+
+                if (p.success) {
+                    document.getElementById("numero-pregunta-UI").innerText = "#" + (indexActual + 1);
+                    document.getElementById("nivel-UI").innerHTML = `<i class="bi bi-lightning-charge-fill"></i> Nivel ${p.nivel}`;
+                    document.getElementById("enunciado-UI").innerText = p.enunciado;
+                    document.getElementById("explicacion-UI").innerText = p.explicacion || "¡Dato curioso no disponible!";
+
+                    let opciones = [
+                        { texto: p.opcionCorrecta, correcta: true },
+                        { texto: p.opcionIncorrecta1, correcta: false },
+                        { texto: p.opcionIncorrecta2, correcta: false },
+                        { texto: p.opcionIncorrecta3, correcta: false }
+                    ].sort(() => Math.random() - 0.5);
+
+                    const opcContainer = document.getElementById("opciones-container");
+                    opcContainer.innerHTML = '';
+                    const letras = ['A', 'B', 'C', 'D'];
+
+                    opciones.forEach((opt, index) => {
+                        const esCorrectaAttr = opt.correcta ? "true" : "false";
+                        opcContainer.innerHTML += `
+                            <button type="button" class="btn-respuesta group relative w-full flex items-center p-4 sm:p-5 rounded-2xl text-left transition-all" data-es-correcta="${esCorrectaAttr}">
+                                <div class="letra-opcion w-12 h-12 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-violet-500 group-hover:text-white flex items-center justify-center font-black text-xl mr-4 transition-colors">
+                                    ${letras[index]}
+                                </div>
+                                <span class="text-lg font-bold group-hover:text-violet-900 dark:group-hover:text-violet-300 transition-colors">${opt.texto}</span>
+                            </button>
+                        `;
+                    });
+
+                    document.getElementById("feedback-UI").classList.add("hidden");
+                    btnSiguienteUI.style.display = "flex";
+                    document.getElementById("espera-jugadores").classList.add("hidden");
+                    document.getElementById("ranking-intermedio-container").innerHTML = '';
+
+                    progresoBadge.textContent = `${indexActual + 1} / ${totalPreguntas}`;
+                    barraProgreso.style.width = `${((indexActual + 1) / totalPreguntas) * 100}%`;
+
+                    document.getElementById("pantalla-carga").classList.add("hidden");
+                    document.getElementById("header-stats").classList.remove("hidden");
+                    tarjetaPregunta.classList.remove("hidden");
+                    setTimeout(() => { tarjetaPregunta.style.opacity = 1; }, 50);
+
+                    pasando = false;
+                    iniciarTemporizador();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        // --- 3. TEMPORIZADOR JUEGO ---
+        function iniciarTemporizador() {
+            respondido = false;
+            clearInterval(timerInterval);
+            segundosRestantes = tiempoConfigurado;
+            actualizarUI();
+
+            timerInterval = setInterval(() => {
+                segundosRestantes--;
+                actualizarUI();
+                if (segundosRestantes <= 0) {
+                    clearInterval(timerInterval);
+                    if (!respondido) finalizarPorTiempo();
+                }
+            }, 1000);
+        }
+
+        function actualizarUI() {
+            timerNumber.textContent = segundosRestantes;
+            let offset = 352 - (segundosRestantes / tiempoConfigurado) * 352;
+            timerBar.style.strokeDashoffset = offset;
+            if (segundosRestantes <= 5) timerNumber.classList.add("text-rose-500");
+            else timerNumber.classList.remove("text-rose-500");
+        }
+
+        function finalizarPorTiempo() {
+            respondido = true;
+            bloquearRespuestas();
+            resaltarCorrecta();
+            mostrarFeedback("¡Tiempo agotado! ⏳", "bg-amber-100 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-400");
+            playSound(false);
+            notificarRespuesta(false);
+            if (!esModoMulti) iniciarAutoPaso(false);
+        }
+
+        // --- 4. RESPUESTAS ---
+        document.getElementById("opciones-container").addEventListener("click", (e) => {
+            const boton = e.target.closest(".btn-respuesta");
+            if (!boton || respondido) return;
+
+            respondido = true;
+            clearInterval(timerInterval);
+            const esCorrecta = boton.getAttribute("data-es-correcta") === "true";
+            bloquearRespuestas();
+
+            if (esCorrecta) {
+                contadorAciertos++;
+                contadorTexto.textContent = contadorAciertos;
+                boton.classList.add("btn-correct");
+                mostrarFeedback("¡Correcto! 🎉", "bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-400");
+                playSound(true);
+            } else {
+                boton.classList.add("btn-incorrect");
+                resaltarCorrecta();
+                mostrarFeedback("¡Fallaste! 💥", "bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-800 dark:text-rose-400");
+                playSound(false);
+            }
+
+            notificarRespuesta(esCorrecta);
+            if (!esModoMulti) iniciarAutoPaso(false);
+        });
+
+        function bloquearRespuestas() {
+            document.querySelectorAll(".btn-respuesta").forEach(btn => btn.classList.add("bloqueado"));
+        }
+
+        function resaltarCorrecta() {
+            const correcta = document.querySelector(".btn-respuesta[data-es-correcta='true']");
+            if (correcta) correcta.classList.add("btn-correct");
+        }
+
+        function mostrarFeedback(mensaje, clases) {
+            const feedback = document.getElementById("feedback-UI");
+            const mensajeResultado = document.getElementById("mensaje-resultado-UI");
+            mensajeResultado.textContent = mensaje;
+            mensajeResultado.className = `p-5 rounded-2xl font-black text-2xl text-center mb-6 shadow-sm border-2 transition-colors ${clases}`;
+            feedback.classList.remove("hidden");
+            feedback.style.opacity = 1;
+        }
+
+        // --- 5. MULTIJUGADOR ---
+        async function notificarRespuesta(esCorrecta) {
+            if (!esModoMulti) return;
+            btnSiguienteUI.style.display = "none";
+            document.getElementById("espera-jugadores").classList.remove("hidden");
+            try {
+                const formData = new URLSearchParams();
+                formData.append("partidaId", partidaId);
+                formData.append("indicePregunta", indexActual);
+                formData.append("esCorrecta", esCorrecta);
+                const response = await fetch("/Trivial/RegistrarRespuesta", { method: "POST", body: formData });
+                const data = await response.json();
+                if (data.todosListos) mostrarRankingIntermedio(data.ranking);
+            } catch (error) { console.error(error); }
+        }
+
+        function mostrarRankingIntermedio(ranking) {
+            document.getElementById("espera-jugadores").classList.add("hidden");
+            let filas = "";
+            ranking.forEach((j, i) => {
+                const medalla = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `<span class="text-slate-400">${i + 1}.</span>`;
+                filas += `<div class="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-700">
+                            <span class="text-lg font-black text-slate-700 dark:text-slate-200">${medalla} ${j.nombre}</span>
+                            <span class="text-sm px-3 py-1.5 rounded-xl font-black bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">${j.puntos} pts</span>
+                         </div>`;
+            });
+
+            document.getElementById("ranking-intermedio-container").innerHTML = `
+                <div class="mt-6 space-y-3 ranking-intermedio animate__animated animate__fadeIn">
+                    <p class="text-center font-black text-sm uppercase tracking-widest text-indigo-500"><i class="bi bi-bar-chart-fill"></i> Ranking en vivo</p>
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl border-2 border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm">${filas}</div>
+                    <button type="button" class="btn-continuar-ranking w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 text-lg rounded-2xl shadow-lg transition-transform flex justify-center items-center">
+                        Siguiente Ronda (10s) <i class="bi bi-arrow-right-short ml-1 text-2xl"></i>
+                    </button>
+                </div>`;
+
+            iniciarAutoPaso(true);
+        }
+
+        // --- 6. NAVEGACIÓN ---
+        btnSiguienteUI.addEventListener("click", pasarSiguiente);
+
+        document.addEventListener("click", (e) => {
+            if (e.target.closest(".btn-continuar-ranking")) pasarSiguiente();
+        });
+
+        async function pasarSiguiente() {
+            // Cancelamos cronómetros de auto-paso al avanzar manualmente
+            clearTimeout(timeoutAutoPaso);
+            clearInterval(intervaloAutoPaso);
+
+            if (pasando) return;
+            pasando = true;
+
+            if (!esModoMulti) {
+                indexActual++;
+                cargarPreguntaActual();
+                return;
+            }
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append("partidaId", partidaId);
+                formData.append("nuevoIndice", indexActual + 1);
+                await fetch("/Trivial/AvanzarPregunta", { method: "POST", body: formData });
+            } catch (error) { console.error(error); pasando = false; }
+        }
+
+        // --- 7. FIN JUEGO ---
+        async function mostrarResultadoFinal() {
+            clearInterval(timerInterval);
+            // Cancelamos también el auto-paso por si acaso
+            clearTimeout(timeoutAutoPaso);
+            clearInterval(intervaloAutoPaso);
+
+            juegoContainer.style.transition = "opacity 0.5s";
+            juegoContainer.style.opacity = 0;
+
+            // 1. LÓGICA DE GUARDADO
+            if (!esModoMulti) {
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const nombreCuestionario = urlParams.get("nombreCuestionario");
+                    if (nombreCuestionario) {
+                        const formData = new URLSearchParams();
+                        formData.append("cuestionario", nombreCuestionario);
+                        formData.append("correctas", contadorAciertos);
+                        formData.append("totales", totalPreguntas);
+                        await fetch("/Trivial/GuardarPartidaIndividual", {
+                            method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: formData
+                        });
+                    }
+                } catch (error) { console.error("Error al guardar:", error); }
+            }
+
+            // 2. MOSTRAR LOS DATOS EN LA PANTALLA FINAL
+            setTimeout(async () => {
+                juegoContainer.style.display = "none";
+                document.getElementById("header-stats").classList.add("hidden");
+
+                if (esModoMulti) {
+                    // Lógica para multijugador (Ranking)
+                    try {
+                        const response = await fetch(`/Trivial/GetRankingFinal?partidaId=${partidaId}`);
+                        const ranking = await response.json();
+                        let html = '<div class="space-y-4">';
+                        ranking.forEach((j, i) => {
+                            const medalla = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`;
+                            html += `
+                                <div class="p-6 rounded-3xl border-4 flex justify-between items-center transition-colors ${i === 0 ? "border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-500/50 shadow-md" : "border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800"}">
+                                    <span class="font-black text-2xl text-slate-800 dark:text-white">${medalla} ${j.nombre}</span>
+                                    <span class="font-black text-indigo-600 dark:text-indigo-400 text-2xl">${j.puntos} pts</span>
+                                </div>`;
+                        });
+                        html += "</div>";
+                        resultadoFinalTexto.innerHTML = html;
+                    } catch (error) { console.error("Error ranking final:", error); }
+                } else {
+                    // Lógica para modo Solo
+                    let nota = (contadorAciertos / totalPreguntas) * 10;
+                    resultadoFinalTexto.innerHTML = `
+                        <div class="text-7xl font-black text-violet-600 dark:text-violet-400 mb-4 drop-shadow-md animate__animated animate__backInDown">
+                            ${nota.toFixed(1)}
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-300 text-xl font-bold">
+                            Has destrozado <strong class="dark:text-white text-indigo-600">${contadorAciertos}</strong> de ${totalPreguntas} preguntas.
+                        </p>
+                    `;
+                }
+
+                // 3. MOSTRAR LA PANTALLA FINAL CON ANIMACIÓN
+                finJuego.classList.remove("hidden");
+                finJuego.style.opacity = 0;
+                finJuego.style.transform = "translateY(20px)";
+                setTimeout(() => {
+                    finJuego.style.transition = "all 0.5s ease-out";
+                    finJuego.style.opacity = 1;
+                    finJuego.style.transform = "translateY(0)";
+                }, 50);
+
+            }, 500);
+        }
+
+        // --- 8. REPORTE ---
+        const modalReporte = document.getElementById("modalReporte");
+
+        window.abrirModalReporte = function() {
+            modalReporte.classList.remove("hidden");
+            // Resetear valores por si acaso
+            document.getElementById("motivoReporte").value = "Respuesta incorrecta";
+            document.getElementById("comentarioReporte").value = "";
+        };
+
+        window.cerrarModalReporte = function() {
+            modalReporte.classList.add("hidden");
+        };
+
+        window.enviarReporte = async function() {
+            const motivo = document.getElementById("motivoReporte").value;
+            const comentario = document.getElementById("comentarioReporte").value;
+            const btn = document.getElementById("btnEnviarReporte");
+
+            // Bloquear botón y poner estado de carga
+            btn.disabled = true;
+            btn.innerHTML = '<div class="inline-block animate-spin rounded-full h-5 w-5 border-4 border-white border-t-transparent mr-2 align-middle"></div> Enviando...';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append("idPregunta", idPreguntaActualReporte);
+                formData.append("motivo", motivo);
+                formData.append("comentario", comentario);
+
+                // Llamada a tu controlador existente
+                const response = await fetch("/Trivial/ReportarPregunta", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert("¡Reporte enviado! " + result.message);
+                    window.cerrarModalReporte();
+                } else {
+                    alert("Error: " + result.message);
+                }
+            } catch (error) {
+                console.error("Error al enviar reporte:", error);
+                alert("Hubo un error de conexión al enviar el reporte.");
+            } finally {
+                // Restaurar botón
+                btn.disabled = false;
+                btn.innerHTML = 'Enviar Reporte';
+            }
+        };
+
+        // ARRANQUE
+        cargarPreguntaActual();
+    });
+</script>

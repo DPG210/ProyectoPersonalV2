@@ -1,0 +1,125 @@
+﻿@model List<ProyectoPersonal.Models.VistaReportePregunta>
+
+@{
+    ViewData["Title"] = "Centro de Mando - Reportes";
+}
+
+<div class="min-h-screen bg-slate-50 px-4 py-12">
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-6 animate__animated animate__fadeInLeft">
+            <a asp-action="Index" class="group inline-flex items-center gap-2 text-[10px] font-black text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all uppercase tracking-[0.2em] bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 backdrop-blur-md px-5 py-2.5 rounded-full shadow-sm hover:shadow-md border border-slate-200/60 dark:border-slate-700/60 active:scale-95">
+                <i class="bi bi-arrow-left text-base group-hover:-translate-x-1 transition-transform"></i> Volver al menú
+            </a>
+        </div>
+        @* --- ENCABEZADO DEL ADMIN --- *@
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 animate__animated animate__fadeInDown">
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <div class="bg-indigo-50 text-indigo-600 w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl shadow-sm">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full"></div>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">Centro de Mando</h1>
+                    <p class="text-slate-500 font-bold mt-1 text-sm uppercase tracking-widest">Gestión de Anomalías y Reportes</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 text-center md:text-right w-full md:w-auto">
+                <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tickets Pendientes</span>
+                <span class="text-2xl font-black text-indigo-600">@(Model?.Count ?? 0)</span>
+            </div>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            @* --- ESTADO VACÍO (Misión Cumplida) --- *@
+            <div class="bg-white p-16 rounded-[3rem] text-center shadow-xl shadow-emerald-100/30 border border-emerald-50 animate__animated animate__fadeInUp">
+                <div class="w-32 h-32 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 text-6xl shadow-inner">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <h2 class="text-3xl font-black text-slate-800 mb-2">Sistema Operativo al 100%</h2>
+                <p class="text-slate-500 font-medium text-lg mb-10">No hay incidencias reportadas. La comunidad está jugando sin problemas.</p>
+                <a asp-action="Index" class="inline-flex items-center gap-3 bg-slate-900 hover:bg-slate-800 text-white font-black py-4 px-10 rounded-2xl transition-all hover:-translate-y-1 shadow-lg">
+                    <i class="bi bi-arrow-left"></i> Volver 
+                </a>
+            </div>
+        }
+        else
+        {
+            @* --- LISTA DE REPORTES --- *@
+            <div class="grid grid-cols-1 gap-6 animate__animated animate__fadeInUp">
+                @foreach (var r in Model)
+                {
+                    // Lógica visual para el tipo de reporte
+                    string bgBadge = "bg-slate-100";
+                    string textBadge = "text-slate-600";
+                    string iconBadge = "bi-info-circle";
+
+                    if (r.Motivo.Contains("incorrecta")) { bgBadge = "bg-rose-100"; textBadge = "text-rose-700"; iconBadge = "bi-x-octagon-fill"; }
+                    else if (r.Motivo.Contains("ortografía")) { bgBadge = "bg-amber-100"; textBadge = "text-amber-700"; iconBadge = "bi-spellcheck"; }
+                    else if (r.Motivo.Contains("ofensivo")) { bgBadge = "bg-purple-100"; textBadge = "text-purple-700"; iconBadge = "bi-exclamation-octagon-fill"; }
+
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col lg:flex-row gap-8 items-start transition-all hover:shadow-xl hover:border-indigo-100 group">
+
+                        @* Contenido del Reporte *@
+                        <div class="flex-1 space-y-5 w-full">
+
+                            @* Meta Datos *@
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span class="@bgBadge @textBadge font-black px-4 py-1.5 rounded-xl text-[10px] uppercase tracking-widest flex items-center gap-1.5 border border-white shadow-sm">
+                                    <i class="bi @iconBadge text-sm"></i> @r.Motivo
+                                </span>
+                                <span class="bg-slate-50 text-slate-500 font-bold px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-widest flex items-center gap-1.5 border border-slate-100">
+                                    <i class="bi bi-hash"></i> ID-@r.IdPregunta
+                                </span>
+                                <span class="text-slate-400 text-xs font-bold flex items-center gap-1 ml-auto">
+                                    <i class="bi bi-clock-history"></i> @(r.Fecha?.ToString("dd MMM yyyy - HH:mm") ?? "Sin fecha")
+                                </span>
+                            </div>
+
+                            @* Pregunta Reportada *@
+                            <div class="bg-slate-50 p-6 rounded-2xl border-l-4 border-slate-300">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Enunciado en conflicto</p>
+                                <h3 class="text-xl font-black text-slate-800 leading-snug">"@r.EnunciadoPregunta"</h3>
+                            </div>
+
+                            @* Comentario del Usuario *@
+                            @if (!string.IsNullOrEmpty(r.Comentario))
+                            {
+                                <div class="flex gap-4 items-start bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm flex-shrink-0 border border-indigo-50 text-indigo-500 font-bold">
+                                        @r.NombreUsuario.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Notas del agente @r.NombreUsuario:</p>
+                                        <p class="text-sm font-medium text-slate-700 italic">"@r.Comentario"</p>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="flex gap-3 items-center text-slate-400 text-xs font-bold">
+                                    <i class="bi bi-person-fill"></i> Reportado por @r.NombreUsuario (Sin comentarios extra)
+                                </div>
+                            }
+                        </div>
+
+                        @* Acción (Resolver) *@
+                        <div class="w-full lg:w-auto flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-slate-100 pt-6 lg:pt-0 lg:pl-8 self-stretch">
+                            <form asp-action="CerrarReporte" asp-controller="Trivial" method="post" class="h-full flex items-center">
+                                <input type="hidden" name="idReporte" value="@r.IdReporte" />
+                                <button type="submit" class="w-full lg:w-48 bg-slate-100 hover:bg-emerald-500 text-slate-600 hover:text-white font-black py-4 px-6 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-200 active:scale-95 group/btn h-full min-h-[120px]">
+                                    <i class="bi bi-check-circle text-3xl group-hover/btn:scale-125 transition-transform"></i>
+                                    <span class="text-xs uppercase tracking-widest">Resolver</span>
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

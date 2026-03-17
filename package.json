@@ -1,0 +1,24 @@
+{
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.1",
+    "tailwindcss": "^4.2.1"
+  },
+  "name": "proyectopersonalv2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DPG210/ProyectoPersonalV2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DPG210/ProyectoPersonalV2/issues"
+  },
+  "homepage": "https://github.com/DPG210/ProyectoPersonalV2#readme"
+}

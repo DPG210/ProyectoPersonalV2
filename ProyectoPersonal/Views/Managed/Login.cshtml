@@ -1,0 +1,94 @@
+﻿@* --- CONTENEDOR DE LOGIN CON FONDO DINÁMICO --- *@
+<div class="min-h-[90vh] flex items-center justify-center px-6 relative overflow-hidden bg-slate-50 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-100 via-slate-50 to-fuchsia-50">
+
+    @* Elementos decorativos de fondo (opcional) *@
+    <div class="absolute top-20 left-20 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-20 right-20 w-96 h-96 bg-fuchsia-400/10 rounded-full blur-3xl"></div>
+
+    <div class="w-full max-w-md relative z-10">
+        @* Card con Glassmorphism suave *@
+        <div class="bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white p-10 md:p-12 animate__animated animate__fadeInUp">
+
+            @* HEADER DEL LOGIN CON LOGO (ESTÁTICO) *@
+            <div class="text-center mb-8 flex flex-col items-center">
+                @* Contenedor del Logo con brillo estático detrás *@
+                <div class="relative inline-block mb-4">
+                    @* Brillo de fondo estático *@
+                    <div class="absolute inset-0 bg-indigo-500 rounded-full blur-[40px] opacity-30 pointer-events-none"></div>
+
+                    @* Imagen Estática con Sombra Proyectada *@
+                    <img src="~/images/logo/logo.png"
+                         class="relative z-10 w-48 sm:w-56 h-auto object-contain drop-shadow-[0_15px_15px_rgba(67,56,202,0.3)]"
+                         alt="Trivial Challenge Logo" />
+                </div>
+
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight">¡Hola de nuevo!</h2>
+                <p class="text-slate-500 font-bold mt-2 uppercase tracking-widest text-[10px]">Acceso a la central de juego</p>
+            </div>
+
+            @* FORMULARIO *@
+            <form asp-action="Login" method="post" class="space-y-8">
+                <div class="space-y-2">
+                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Identificación</label>
+                    <div class="relative group">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                            <i class="bi bi-person-fill text-xl"></i>
+                        </span>
+                        <input type="text" name="username"
+                               class="w-full bg-slate-100/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 pl-14 pr-6 font-bold text-slate-700 outline-none transition-all shadow-inner"
+                               placeholder="Email o Usuario" required />
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Clave de Acceso</label>
+                    <div class="relative group">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                            <i class="bi bi-lock-fill text-xl"></i>
+                        </span>
+                        <input type="password" name="password"
+                               class="w-full bg-slate-100/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 pl-14 pr-6 font-bold text-slate-700 outline-none transition-all shadow-inner"
+                               placeholder="••••••••" required />
+                    </div>
+                </div>
+
+                @* BOTÓN ESTILO ARCADE *@
+                <div class="pt-4">
+                    <button type="submit"
+                            class="group relative w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-5 rounded-[2rem] text-xl tracking-tighter shadow-[0_8px_0_rgb(67,56,202)] hover:shadow-[0_6px_0_rgb(67,56,202)] hover:translate-y-[2px] active:shadow-none active:translate-y-[8px] transition-all flex items-center justify-center gap-3">
+                        <span>ENTRAR AL JUEGO</span>
+                        <i class="bi bi-rocket-takeoff-fill text-2xl group-hover:animate-bounce"></i>
+                    </button>
+                </div>
+            </form>
+
+            @* FOOTER DEL LOGIN *@
+            <div class="mt-12 text-center">
+                <div class="h-px bg-slate-100 w-full mb-8 relative">
+                    <span class="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-4 text-[10px] font-black text-slate-300 uppercase tracking-widest">Nuevo Jugador</span>
+                </div>
+                <p class="text-sm font-bold text-slate-500">
+                    ¿No tienes cuenta?
+                    <a asp-controller="Trivial" asp-action="CrearUsuario"
+                       class="text-indigo-600 hover:text-fuchsia-600 transition-colors ml-1 underline decoration-2 underline-offset-4">
+                        Regístrate gratis
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        @* Link de vuelta sutil *@
+        <div class="text-center mt-8">
+            <a asp-controller="Home" asp-action="Index" class="text-slate-400 hover:text-slate-600 text-xs font-black uppercase tracking-[0.2em] transition-colors">
+                <i class="bi bi-arrow-left"></i> Volver a la web
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Pequeño retoque para que los iconos se alineen perfectamente */
+    .input-trivial:focus + span i {
+        transform: scale(1.1);
+    }
+</style>

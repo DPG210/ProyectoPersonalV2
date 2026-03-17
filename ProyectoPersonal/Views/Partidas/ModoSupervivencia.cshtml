@@ -1,0 +1,490 @@
+﻿@model List<int>
+
+@{
+    ViewData["Title"] = "Modo Supervivencia";
+}
+
+@if (Model != null && Model.Any())
+{
+    @* Contenedor principal adaptable Claro/Oscuro *@
+    <div class="fixed inset-0 bg-slate-50 dark:bg-slate-950 z-[-1] hidden md:block transition-colors duration-500"></div>
+
+    <div class="max-w-4xl mx-auto md:mt-8 p-4 font-sans relative">
+
+        @* BOTÓN DE REPORTE *@
+        <div class="flex justify-end mb-4">
+            <button onclick="abrirModalReporte()" class="text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors flex items-center gap-2 text-xs font-bold bg-white dark:bg-slate-900 px-4 py-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-800" title="Reportar error en la pregunta">
+                <i class="bi bi-shield-exclamation text-lg"></i> Reportar Error
+            </button>
+        </div>
+
+        @* --- HUD DE SUPERVIVENCIA (Tablero Arcade) --- *@
+        <div id="header-stats" class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.7)] p-6 mb-8 border-2 border-slate-100 dark:border-slate-800 hidden relative overflow-hidden transition-colors duration-300">
+
+            @* Brillo sutil de fondo *@
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent opacity-50"></div>
+
+            <div class="flex justify-between items-center relative z-10">
+
+                @* VIDAS (Peligro constante) *@
+                <div class="flex flex-col items-start w-1/3">
+                    <span class="text-slate-400 dark:text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Estado</span>
+                    <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl transition-colors">
+                        <span class="text-rose-500 text-3xl animate-pulse drop-shadow-[0_0_15px_rgba(244,63,94,0.4)] dark:drop-shadow-[0_0_15px_rgba(244,63,94,0.6)]">❤️</span>
+                        <span class="text-3xl font-black text-slate-800 dark:text-white transition-colors"><span id="vidas-count">@ViewBag.VidasSupervivencia</span></span>
+                    </div>
+                </div>
+
+                @* PUNTUACIÓN (El objetivo) *@
+                <div class="flex flex-col items-center w-1/3 transform hover:scale-105 transition-transform">
+                    <span class="text-slate-400 dark:text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Puntuación</span>
+                    <h3 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-400 to-orange-500 tracking-tighter drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                        <span id="score">0</span>
+                    </h3>
+                </div>
+
+                @* NIVEL (Derecha) *@
+                <div class="flex flex-col items-end w-1/3">
+                    <span class="text-slate-400 dark:text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Dificultad</span>
+                    <span class="bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 text-lg px-4 py-2 rounded-xl font-black uppercase tracking-wider shadow-inner transition-colors" id="nivel-badge">
+                        Nivel --
+                    </span>
+                </div>
+            </div>
+
+            @* BARRA DE TIEMPO INTEGRADA EN EL HUD *@
+            <div id="barra-tiempo-container" class="w-full bg-slate-100 dark:bg-slate-950 rounded-full h-3 mt-6 overflow-hidden border border-slate-200 dark:border-slate-800 shadow-inner hidden transition-colors">
+                <div id="timer-bar" class="bg-gradient-to-r from-orange-400 to-rose-500 dark:from-orange-500 dark:to-rose-600 h-full rounded-full transition-all ease-linear shadow-[0_0_10px_rgba(225,29,72,0.5)] dark:shadow-[0_0_10px_rgba(225,29,72,0.8)]" style="width: 100%; transition-duration: 1s;"></div>
+            </div>
+            @* Contador de segundos visualizado sutilmente encima de la barra *@
+            <div class="text-center mt-2 hidden" id="timer-text-container">
+                <span class="text-slate-500 dark:text-slate-400 font-mono text-xs font-bold tracking-widest"><span id="timer-text" class="text-rose-500 dark:text-rose-400">30</span> SEG</span>
+            </div>
+        </div>
+
+        @* --- CONTENEDOR PRINCIPAL DEL JUEGO --- *@
+        <div id="juego-container">
+
+            @* PANTALLA DE CARGA *@
+            <div id="pantalla-carga" class="text-center py-24 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 transition-colors duration-300">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-3xl mb-6 animate-pulse border border-rose-200 dark:border-rose-500/20">
+                    <i class="bi bi-heart-pulse-fill text-5xl"></i>
+                </div>
+                <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Cargando la arena...</h2>
+                <p class="text-slate-500 dark:text-slate-400 font-bold mt-2">Prepárate para sobrevivir</p>
+            </div>
+
+            @* LA TARJETA DE PREGUNTA *@
+            <div id="game-card" class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300 hidden relative">
+
+                @* Decoración superior *@
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-200 via-slate-400 to-slate-200 dark:from-slate-800 dark:via-slate-600 dark:to-slate-800 transition-colors"></div>
+
+                <div class="p-8 md:p-12 text-center relative z-10 border-b border-slate-100 dark:border-slate-800 transition-colors">
+                    <span class="text-slate-400 dark:text-slate-500 font-bold text-sm tracking-widest uppercase mb-4 block">
+                        <i class="bi bi-crosshair text-rose-500 mr-2"></i> Ronda <span id="current-index" class="text-slate-600 dark:text-slate-300">1</span>
+                    </span>
+                    <h3 id="enunciado-UI" class="text-2xl md:text-4xl font-black leading-tight text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-md transition-colors">
+                        Cargando pregunta...
+                    </h3>
+                </div>
+
+                <div class="p-6 md:p-10 bg-slate-50 dark:bg-slate-800/50 transition-colors">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6" id="respuestas-container">
+                        @* Los botones se inyectan por JS *@
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @* --- PANTALLA GAME OVER ÉPICA --- *@
+    <div id="gameOverModal" class="hidden fixed inset-0 bg-white/95 dark:bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-colors duration-500">
+        <div class="bg-white dark:bg-slate-900 border-2 border-rose-200 dark:border-rose-600/50 rounded-[3rem] shadow-2xl dark:shadow-[0_0_80px_rgba(225,29,72,0.4)] p-10 md:p-16 max-w-lg w-full text-center transform scale-100 relative overflow-hidden transition-colors">
+
+            @* Luz de fondo *@
+            <div class="absolute -top-32 -left-32 w-64 h-64 bg-rose-500 dark:bg-rose-600 rounded-full blur-[80px] dark:blur-[100px] opacity-20"></div>
+
+            <div class="relative z-10">
+                <div class="text-rose-500 text-7xl mb-4 animate-bounce drop-shadow-[0_0_15px_rgba(244,63,94,0.4)] dark:drop-shadow-[0_0_20px_rgba(244,63,94,0.6)]">
+                    <i class="bi bi-skull-fill"></i>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-rose-400 to-rose-600 dark:from-rose-400 dark:to-rose-700 mb-2 tracking-tighter drop-shadow-sm dark:drop-shadow-lg">
+                    GAME OVER
+                </h1>
+                <p class="text-lg text-slate-500 dark:text-slate-400 mb-8 font-bold uppercase tracking-widest">Fin de la partida</p>
+
+                <div class="bg-slate-50 dark:bg-slate-950 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 mb-10 shadow-inner transition-colors">
+                    <p class="text-sm text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest mb-2">Puntuación Final</p>
+                    <h2 class="text-7xl font-black text-amber-500 dark:text-amber-400 drop-shadow-sm dark:drop-shadow-[0_0_20px_rgba(251,191,36,0.5)]" id="final-score">0</h2>
+                </div>
+
+                <form id="form-guardar-ranking" asp-action="GuardarRanking" asp-controller="Trivial" method="post">
+                    <input type="hidden" id="input-puntos" name="puntos" value="0" />
+                    <input type="hidden" name="modoJuego" value="SUPERVIVENCIA" />
+                    <input type="hidden" name="nombreCuestionario" value="@ViewBag.NombreCuestionario" />
+                    <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-red-600 dark:from-rose-600 dark:to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-black py-5 rounded-2xl text-xl transition-transform active:scale-95 shadow-[0_4px_15px_rgba(225,29,72,0.3)] dark:shadow-[0_0_30px_rgba(225,29,72,0.4)] flex items-center justify-center gap-3">
+                        <i class="bi bi-save2-fill"></i> GUARDAR Y SALIR
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @* --- MODAL DE REPORTE --- *@
+    <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-colors">
+        <div class="bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transition-colors">
+            <div class="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-5 text-slate-800 dark:text-slate-200 flex justify-between items-center transition-colors">
+                <h3 class="font-black text-lg flex items-center gap-2"><i class="bi bi-flag-fill text-rose-500"></i> Reportar Error</h3>
+                <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white font-black text-2xl transition-colors">&times;</button>
+            </div>
+            <div class="p-8 space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-500 dark:text-slate-400 mb-2">Motivo del reporte:</label>
+                    <select id="motivoReporte" class="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-400 dark:focus:border-rose-500 outline-none text-slate-700 dark:text-slate-200 font-bold transition-colors">
+                        <option value="Respuesta incorrecta">La respuesta correcta es otra</option>
+                        <option value="Falta de ortografía">Falta de ortografía o confusa</option>
+                        <option value="Contenido ofensivo">Contenido inapropiado</option>
+                        <option value="Otro">Otro motivo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-500 dark:text-slate-400 mb-2">Comentario (opcional):</label>
+                    <textarea id="comentarioReporte" rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-400 dark:focus:border-rose-500 outline-none text-slate-700 dark:text-slate-200 resize-none transition-colors" placeholder="El fallo es..."></textarea>
+                </div>
+                <button onclick="enviarReporte()" id="btnEnviarReporte" class="w-full bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-500 text-white font-black py-4 rounded-xl transition-transform active:scale-95 shadow-md dark:shadow-[0_0_20px_rgba(225,29,72,0.3)]">
+                    Enviar Reporte
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            // --- 0. ENGINE DE AUDIO ---
+            const soundCorrect = new Audio('/sounds/acierto.mp3');
+            const soundWrong   = new Audio('/sounds/fallo.mp3');
+            const soundLoser   = new Audio('/sounds/losser.mp3');
+
+            soundCorrect.volume = 0.5;
+            soundWrong.volume   = 0.5;
+            soundLoser.volume   = 0.6; // La música de derrota
+
+            function playSound(type) {
+                try {
+                    if (type === 'correct') {
+                        soundCorrect.currentTime = 0;
+                        soundCorrect.play().catch(e => console.log("Audio bloqueado", e));
+                    } else if (type === 'wrong') {
+                        soundWrong.currentTime = 0;
+                        soundWrong.play().catch(e => console.log("Audio bloqueado", e));
+                    } else if (type === 'loser') {
+                        soundLoser.currentTime = 0;
+                        soundLoser.play().catch(e => console.log("Audio bloqueado", e));
+                    }
+                } catch(e) {}
+            }
+
+            // --- 1. CONFIGURACIÓN INICIAL ---
+            const idsPreguntas = @Html.Raw(Json.Serialize(Model));
+            let totalPreguntas = idsPreguntas.length;
+            let indexActual = 0;
+            let score = 0;
+            let vidas = @ViewBag.VidasSupervivencia;
+            let idPreguntaActualReporte = 0;
+
+            // Lógica del Reloj
+            let tiempoBase = 30;
+            let tiempoRestante = tiempoBase;
+            let timerInterval = null;
+
+            // Referencias DOM
+            const gameCard = document.getElementById("game-card");
+            const headerStats = document.getElementById("header-stats");
+            const barraTiempo = document.getElementById("barra-tiempo-container");
+            const pantallaCarga = document.getElementById("pantalla-carga");
+            const timerTextContainer = document.getElementById("timer-text-container");
+
+            // --- 2. SISTEMA AJAX DE CARGA PEREZOSA ---
+            async function cargarPreguntaActual() {
+                if (indexActual >= totalPreguntas) {
+                    mostrarGameOver();
+                    return;
+                }
+
+                if (indexActual === 0) {
+                    pantallaCarga.classList.remove("hidden");
+                    gameCard.classList.add("hidden");
+                } else {
+                    gameCard.style.opacity = 0.5;
+                    gameCard.style.transform = "scale(0.98)";
+                }
+
+                idPreguntaActualReporte = idsPreguntas[indexActual];
+
+                try {
+                    const response = await fetch('/Trivial/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
+                    const p = await response.json();
+
+                    if (p.success) {
+                        document.getElementById("enunciado-UI").innerText = p.enunciado;
+                        document.getElementById("current-index").innerText = indexActual + 1;
+                        document.getElementById("nivel-badge").innerText = "Nivel " + p.nivel;
+
+                        let opciones = [
+                            { texto: p.opcionCorrecta, correcta: true },
+                            { texto: p.opcionIncorrecta1, correcta: false },
+                            { texto: p.opcionIncorrecta2, correcta: false },
+                            { texto: p.opcionIncorrecta3, correcta: false }
+                        ].sort(() => Math.random() - 0.5);
+
+                        const container = document.getElementById("respuestas-container");
+                        container.innerHTML = "";
+
+                        // ESTILOS DE BOTÓN 3D ADAPTADOS AL MODO CLARO Y OSCURO
+                        const baseBtnClasses = "btn-respuesta group relative w-full flex items-center p-5 sm:p-6 rounded-2xl font-bold text-lg text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border-2 border-b-4 border-slate-200 dark:border-slate-700 hover:-translate-y-1 hover:border-slate-300 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-white dark:hover:bg-slate-700 transition-all active:border-b-2 active:mt-[2px] shadow-sm";
+
+                        opciones.forEach(r => {
+                            const textoSeguro = r.texto ? r.texto.replace(/'/g, "&#39;") : "";
+                            const esCorrectaAttr = r.correcta ? "true" : "false";
+
+                            container.innerHTML += `
+                                <button type="button" class="${baseBtnClasses}" data-correcta="${esCorrectaAttr}" data-nivel="${p.nivel}">
+                                    <span class="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600 group-hover:bg-rose-500 mr-4 transition-colors"></span>
+                                    ${textoSeguro}
+                                </button>
+                            `;
+                        });
+
+                        pantallaCarga.classList.add("hidden");
+                        headerStats.classList.remove("hidden");
+                        barraTiempo.classList.remove("hidden");
+                        timerTextContainer.classList.remove("hidden");
+                        gameCard.classList.remove("hidden");
+
+                        setTimeout(() => {
+                            gameCard.style.opacity = 1;
+                            gameCard.style.transform = "scale(1)";
+                        }, 50);
+
+                        iniciarReloj();
+                    }
+                } catch (error) {
+                    console.error("Error al cargar la pregunta:", error);
+                }
+            }
+
+            // --- 3. TEMPORIZADOR ---
+            function iniciarReloj() {
+                clearInterval(timerInterval);
+                tiempoRestante = tiempoBase;
+                actualizarUI_Reloj();
+
+                timerInterval = setInterval(() => {
+                    tiempoRestante--;
+                    actualizarUI_Reloj();
+
+                    if (tiempoRestante <= 0) {
+                        clearInterval(timerInterval);
+                        const botones = document.querySelectorAll(".btn-respuesta");
+                        botones.forEach(b => {
+                            b.disabled = true;
+                            b.classList.add("opacity-50", "pointer-events-none");
+                        });
+                        playSound('wrong'); // Sonido de fallo por tiempo agotado
+                        manejarFallo(botones);
+                    }
+                }, 1000);
+            }
+
+            function actualizarUI_Reloj() {
+                document.getElementById("timer-text").innerText = tiempoRestante;
+                let porcentaje = (tiempoRestante / tiempoBase) * 100;
+                const barra = document.getElementById("timer-bar");
+
+                barra.style.width = porcentaje + "%";
+
+                if (porcentaje <= 25) {
+                    barra.className = "bg-rose-500 dark:bg-rose-600 h-full rounded-full transition-all ease-linear shadow-[0_0_15px_rgba(244,63,94,0.6)] dark:shadow-[0_0_15px_rgba(225,29,72,1)] animate-pulse";
+                    document.getElementById("timer-text").parentElement.classList.add("animate-ping");
+                } else {
+                    barra.className = "bg-gradient-to-r from-orange-400 to-rose-500 dark:from-orange-500 dark:to-rose-600 h-full rounded-full transition-all ease-linear shadow-sm dark:shadow-[0_0_10px_rgba(225,29,72,0.8)]";
+                    document.getElementById("timer-text").parentElement.classList.remove("animate-ping");
+                }
+            }
+
+            // --- 4. LÓGICA DE RESPUESTAS ---
+            document.getElementById("respuestas-container").addEventListener("click", (e) => {
+                const boton = e.target.closest(".btn-respuesta");
+                if (!boton) return;
+
+                clearInterval(timerInterval);
+                const botones = document.querySelectorAll(".btn-respuesta");
+                botones.forEach(b => {
+                    b.disabled = true;
+                    b.classList.add("opacity-50", "pointer-events-none");
+                });
+
+                const esCorrecta = boton.getAttribute("data-correcta") === "true";
+                const nivel = parseInt(boton.getAttribute("data-nivel"));
+
+                boton.classList.remove("opacity-50");
+
+                if (esCorrecta) {
+                    playSound('correct'); // ¡Acierto!
+                    boton.className = "btn-respuesta w-full flex items-center p-5 sm:p-6 rounded-2xl font-black text-xl text-emerald-800 dark:text-white bg-emerald-100 dark:bg-emerald-600 border-2 border-b-4 border-emerald-400 dark:border-emerald-500 translate-y-0 border-b-2 mt-[2px] shadow-sm dark:shadow-[0_0_30px_rgba(16,185,129,0.5)] scale-105 transition-all";
+                    boton.innerHTML = `<i class="bi bi-check-circle-fill text-2xl mr-3 text-emerald-500 dark:text-white"></i>` + boton.innerHTML;
+
+                    score += (nivel * 10);
+                    const scoreElement = document.getElementById("score");
+                    scoreElement.innerText = score;
+
+                    scoreElement.classList.add("scale-125");
+                    setTimeout(() => scoreElement.classList.remove("scale-125"), 300);
+
+                    setTimeout(() => {
+                        indexActual++;
+                        cargarPreguntaActual();
+                    }, 1200);
+                } else {
+                    playSound('wrong'); // Fallo normal (pierde una vida)
+                    boton.className = "btn-respuesta w-full flex items-center p-5 sm:p-6 rounded-2xl font-black text-xl text-rose-800 dark:text-white bg-rose-100 dark:bg-rose-600 border-2 border-b-4 border-rose-400 dark:border-rose-500 translate-y-0 border-b-2 mt-[2px] shadow-sm dark:shadow-[0_0_30px_rgba(225,29,72,0.5)] transition-all";
+                    boton.innerHTML = `<i class="bi bi-x-circle-fill text-2xl mr-3 text-rose-500 dark:text-white"></i>` + boton.innerHTML;
+
+                    manejarFallo(botones);
+                }
+            });
+
+            function manejarFallo(botones) {
+                clearInterval(timerInterval);
+                vidas--;
+
+                const vidasEl = document.getElementById("vidas-count");
+                vidasEl.innerText = vidas;
+
+                // Efecto visual de daño
+                const vidasContainer = vidasEl.parentElement.parentElement;
+                vidasContainer.classList.add("bg-rose-100", "dark:bg-rose-900/50", "border-rose-300", "dark:border-rose-500");
+                document.body.classList.add("bg-rose-50", "dark:bg-rose-950");
+                setTimeout(() => {
+                    vidasContainer.classList.remove("bg-rose-100", "dark:bg-rose-900/50", "border-rose-300", "dark:border-rose-500");
+                    document.body.classList.remove("bg-rose-50", "dark:bg-rose-950");
+                }, 300);
+
+                if (botones) {
+                    botones.forEach(b => {
+                        if (b.getAttribute('data-correcta') === 'true') {
+                            b.classList.remove("opacity-50");
+                            b.className = "btn-respuesta w-full flex items-center p-5 sm:p-6 rounded-2xl font-black text-xl text-emerald-800 dark:text-white bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-300 dark:border-emerald-500/50 shadow-sm dark:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all";
+                        }
+                    });
+                }
+
+                if (vidas <= 0) {
+                    // Murió del todo. Llama al circo.
+                    playSound('loser');
+                    setTimeout(mostrarGameOver, 1500);
+                } else {
+                    setTimeout(() => {
+                        indexActual++;
+                        cargarPreguntaActual();
+                    }, 2000);
+                }
+            }
+
+            function mostrarGameOver() {
+                clearInterval(timerInterval);
+                document.getElementById("final-score").innerText = score;
+                document.getElementById("input-puntos").value = score;
+                const modal = document.getElementById('gameOverModal');
+                modal.classList.remove('hidden');
+
+                // Animación de entrada
+                modal.querySelector('div').style.transform = "scale(0.9)";
+                setTimeout(() => {
+                    modal.querySelector('div').style.transition = "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                    modal.querySelector('div').style.transform = "scale(1)";
+                }, 50);
+            }
+
+            // --- 7. FUNCIONES MODAL REPORTE ---
+        window.abrirModalReporte = function() {
+            if(idPreguntaActualReporte > 0) {
+                document.getElementById('motivoReporte').value = 'Respuesta incorrecta';
+                document.getElementById('comentarioReporte').value = '';
+                document.getElementById('modalReporte').classList.remove('hidden');
+            }
+        };
+
+        window.cerrarModalReporte = function () {
+            document.getElementById('modalReporte').classList.add('hidden');
+        };
+
+        window.enviarReporte = async function() {
+            const btn = document.getElementById('btnEnviarReporte');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin"></i> Enviando...';
+
+            // Detectamos si el modo oscuro está activado en el HTML
+            const isDark = document.documentElement.classList.contains('dark');
+            const bgColor = isDark ? '#0f172a' : '#ffffff'; // slate-900 o blanco
+            const textColor = isDark ? '#f8fafc' : '#1e293b'; // slate-50 o slate-800
+
+            try {
+                const formData = new FormData();
+                formData.append('idPregunta', idPreguntaActualReporte);
+                formData.append('motivo', document.getElementById('motivoReporte').value);
+                formData.append('comentario', document.getElementById('comentarioReporte').value);
+
+                const response = await fetch('/Trivial/ReportarPregunta', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                if(data.success) {
+                    window.cerrarModalReporte();
+                    Swal.fire({
+                        title: '¡Anomalía Reportada!',
+                        text: 'Hemos recibido tu transmisión. Lo revisaremos enseguida.',
+                        icon: 'success',
+                        background: bgColor,
+                        color: textColor,
+                        confirmButtonColor: '#10b981', // emerald-500
+                        confirmButtonText: '<i class="bi bi-check-lg"></i> Entendido'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error en la transmisión',
+                        text: data.message || "No se pudo enviar el reporte.",
+                        icon: 'error',
+                        background: bgColor,
+                        color: textColor,
+                        confirmButtonColor: '#e11d48' // rose-600
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Enlace perdido',
+                    text: 'Hubo un error de conexión con el centro de mando.',
+                    icon: 'warning',
+                    background: bgColor,
+                    color: textColor,
+                    confirmButtonColor: '#f59e0b' // amber-500
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Enviar Reporte';
+            }
+        };
+
+            // --- 6. ARRANQUE ---
+            if(totalPreguntas > 0) {
+                cargarPreguntaActual();
+            } else {
+                alert("No hay preguntas disponibles.");
+            }
+        });
+    </script>
+}

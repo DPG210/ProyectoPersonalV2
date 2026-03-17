@@ -1,0 +1,91 @@
+﻿@{
+    ViewData["Title"] = "Pase VIP ";
+}
+
+<div class="max-w-5xl mx-auto px-4 py-12 space-y-10 font-sans text-slate-800">
+
+    @* CABECERA *@
+    <div class="text-center space-y-4">
+        <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-orange-600 tracking-tighter drop-shadow-sm">
+            Pase VIP 
+        </h1>
+        <p class="text-lg font-bold text-slate-500">Desbloquea tu verdadero potencial y domina el Trivial</p>
+    </div>
+
+    @* ALERTAS *@
+    @if (TempData["ErrorTienda"] != null)
+    {
+        <div class="bg-rose-50 border-2 border-rose-200 text-rose-600 p-4 rounded-2xl text-center font-bold max-w-2xl mx-auto">
+            @TempData["ErrorTienda"]
+        </div>
+    }
+
+    @* TARJETAS DE PRECIOS *@
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mt-10">
+
+        @* PLAN MENSUAL *@
+        <div class="bg-white rounded-[3rem] shadow-xl border border-slate-100 p-8 relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300 flex flex-col">
+            <div class="text-center mb-6">
+                <span class="text-5xl filter drop-shadow-md block mb-4 group-hover:scale-110 transition-transform">💎</span>
+                <h3 class="text-2xl font-black text-slate-800">Suscripción Mensual</h3>
+                <p class="text-slate-400 font-bold text-sm mt-1">Renovación mes a mes</p>
+            </div>
+
+            <div class="text-center mb-8">
+                <span class="text-5xl font-black text-slate-800 tracking-tighter">0,99<span class="text-2xl text-slate-400">€/mes</span></span>
+            </div>
+
+            <ul class="space-y-4 mb-8 flex-grow font-bold text-slate-600">
+                <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-emerald-500"></i> Corazones Infinitos</li>
+                <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-emerald-500"></i> Marco VIP en el Perfil</li>
+                <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-emerald-500"></i> Cero Anuncios</li>
+            </ul>
+
+            <form asp-action="ProcesarSuscripcion" method="post">
+                <input type="hidden" name="tipoPlan" value="mensual" />
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-[2rem] text-lg transition-all shadow-lg flex items-center justify-center gap-2">
+                    ELEGIR MENSUAL
+                </button>
+            </form>
+        </div>
+
+        @* PLAN ANUAL (DESTACADO) *@
+        <div class="bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 rounded-[3rem] shadow-2xl shadow-orange-500/30 p-1 relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
+            @* Etiqueta de Ahorro *@
+            <div class="absolute top-6 -right-10 bg-white text-orange-600 font-black text-[10px] uppercase tracking-widest py-1 px-10 rotate-45 shadow-md">
+                Ahorras 2 meses
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm rounded-[2.85rem] p-8 h-full flex flex-col">
+                <div class="text-center mb-6">
+                    <span class="text-6xl filter drop-shadow-md block mb-4 group-hover:scale-110 transition-transform">👑</span>
+                    <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500">Suscripción Anual</h3>
+                    <p class="text-orange-400 font-bold text-sm mt-1">La elección de los campeones</p>
+                </div>
+
+                <div class="text-center mb-8">
+                    <span class="text-5xl font-black text-slate-800 tracking-tighter">9,90<span class="text-2xl text-slate-400">€/año</span></span>
+                </div>
+
+                <ul class="space-y-4 mb-8 flex-grow font-bold text-slate-600">
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-orange-500"></i> Todo lo del plan mensual</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-orange-500"></i> Título exclusivo "Gran Maestre"</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-orange-500"></i> Rango prioritario en Matchmaking</li>
+                </ul>
+
+                <form asp-action="ProcesarSuscripcion" method="post">
+                    <input type="hidden" name="tipoPlan" value="anual" />
+                    <button type="submit" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-black py-4 rounded-[2rem] text-lg transition-all shadow-lg shadow-orange-500/40 flex items-center justify-center gap-2">
+                        ELEGIR ANUAL <i class="bi bi-star-fill text-sm"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="text-center mt-8">
+        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><i class="bi bi-shield-check"></i> Pagos encriptados y gestionados por Stripe</span>
+    </div>
+
+</div>

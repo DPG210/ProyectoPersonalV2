@@ -1,0 +1,175 @@
+﻿@model List<string>
+@{
+    // Definimos quién tiene derecho a esta función
+    bool esVip = User.IsInRole("PREMIUM") || User.IsInRole("ADMIN") ;
+}
+@* --- ENVOLTORIO DINÁMICO --- *@
+<div class="min-h-screen bg-slate-50 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-100/60 via-slate-50 to-fuchsia-100/40 py-12 px-4 relative overflow-hidden">
+
+    @* Luces de ambiente (Fondo) *@
+    <div class="absolute top-20 left-10 w-96 h-96 bg-indigo-300/20 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
+    <div class="absolute bottom-10 right-20 w-80 h-80 bg-fuchsia-300/20 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-3xl mx-auto relative z-10">
+
+        @* --- TARJETA PRINCIPAL (Bento/Glassmorphism) --- *@
+        <div class="bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-2xl shadow-indigo-100/50 border border-white p-8 md:p-14 animate__animated animate__fadeInUp">
+
+            @* ENCABEZADO DE CREACIÓN *@
+            <div class="text-center mb-12">
+                <div class="relative inline-flex mb-6 group">
+                    <div class="absolute inset-0 bg-indigo-500 rounded-[2rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    <div class="relative bg-gradient-to-br from-indigo-600 to-fuchsia-500 text-white w-24 h-24 rounded-[2rem] flex items-center justify-center text-4xl shadow-2xl transform -rotate-3 group-hover:rotate-0 transition-transform duration-300">
+                        <i class="bi bi-hammer"></i>
+                    </div>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-2">La Forja</h2>
+                <p class="text-slate-500 font-bold text-sm uppercase tracking-widest">Diseña un nuevo desafío para la comunidad</p>
+            </div>
+
+            @* FORMULARIO *@
+            <form asp-action="CreateCuestionario" method="post" class="space-y-8">
+
+                @* 1. Categoría *@
+                <div class="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+                    <div class="flex justify-between items-end">
+                        <label class="block text-[11px] font-black text-indigo-500 uppercase tracking-widest ml-2">
+                            Materia / Categoría
+                        </label>
+                        <a href="/Trivial/NuevaCategoria" class="text-[10px] font-black text-fuchsia-500 hover:text-fuchsia-600 uppercase tracking-widest bg-fuchsia-50 px-3 py-1 rounded-full border border-fuchsia-100 transition-colors">
+                            + Nueva
+                        </a>
+                    </div>
+                    <div class="relative group">
+                        <span class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
+                            <i class="bi bi-tags-fill text-xl"></i>
+                        </span>
+                        <select name="categoria" class="w-full bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-2xl py-4 pl-16 pr-6 font-bold text-slate-700 outline-none transition-all shadow-sm cursor-pointer appearance-none" required>
+                            <option value="" disabled selected>Selecciona el tema de tu cuestionario...</option>
+                            @foreach (string cat in Model)
+                            {
+                                <option value="@cat">@cat</option>
+                            }
+                        </select>
+                        @* Icono de flecha custom *@
+                        <span class="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            <i class="bi bi-chevron-down"></i>
+                        </span>
+                    </div>
+                </div>
+
+                @* 2. Título *@
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">
+                        Título de la Misión
+                    </label>
+                    <div class="relative group">
+                        <span class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
+                            <i class="bi bi-type-h1 text-xl"></i>
+                        </span>
+                        <input type="text" name="titulo"
+                               class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-5 pl-16 pr-6 font-black text-xl text-slate-800 outline-none transition-all shadow-inner placeholder-slate-300"
+                               placeholder="Ej: Historia Universal - Nivel Experto" required maxlength="100" />
+                    </div>
+                </div>
+
+                @* 3. Descripción *@
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">
+                        Descripción e Instrucciones
+                    </label>
+                    <div class="relative group">
+                        <span class="absolute left-6 top-6 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
+                            <i class="bi bi-textarea-t text-xl"></i>
+                        </span>
+                        <textarea name="descripcion"
+                                  class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[2rem] py-6 pl-16 pr-6 font-semibold text-slate-600 outline-none transition-all shadow-inner min-h-[140px] resize-none placeholder-slate-300 leading-relaxed"
+                                  placeholder="Explica a los jugadores qué se van a encontrar en este reto..." required></textarea>
+                    </div>
+                </div>
+
+                @* 4. Privacidad (Tarjetas Interactivas con Restricción Premium) *@
+                @{
+                    bool esVip = User.IsInRole("PREMIUM") || User.IsInRole("ADMIN") || User.IsInRole("Admin");
+                }
+
+                <div class="space-y-4 pt-4">
+                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">
+                        Visibilidad del Cuestionario
+                    </label>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                        @* Opcion Público - Disponible para todos *@
+                        <label class="relative flex flex-col items-center justify-center p-6 border-2 border-slate-200 dark:border-slate-800 rounded-[2rem] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-all has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50 dark:has-[:checked]:bg-indigo-950/30 has-[:checked]:shadow-md group">
+                            <input type="radio" name="espublico" value="true" class="sr-only" required checked>
+                            <div class="w-14 h-14 bg-slate-100 dark:bg-slate-800 group-has-[:checked]:bg-indigo-500 text-slate-400 dark:text-slate-500 group-has-[:checked]:text-white rounded-full flex items-center justify-center text-2xl mb-3 transition-colors">
+                                <i class="bi bi-globe-americas"></i>
+                            </div>
+                            <span class="font-black text-slate-700 dark:text-slate-200 group-has-[:checked]:text-indigo-700 dark:group-has-[:checked]:text-indigo-400 text-lg">Público</span>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center mt-1">Visible en el buscador</span>
+                        </label>
+
+                        @* Opcion Privado - Solo Premium *@
+                        <label class="relative flex flex-col items-center justify-center p-6 border-2 rounded-[2rem] transition-all
+                        @(esVip
+                                               ? "border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 has-[:checked]:border-fuchsia-500 has-[:checked]:bg-fuchsia-50 dark:has-[:checked]:bg-fuchsia-950/30"
+                                               : "border-slate-100 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-950/50 cursor-not-allowed opacity-60") group">
+
+                            <input type="radio" name="espublico" value="false" class="sr-only" @(esVip ? "" : "disabled")>
+
+                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl mb-3 transition-colors
+                            @(esVip
+                                                     ? "bg-slate-100 dark:bg-slate-800 group-has-[:checked]:bg-fuchsia-500 text-slate-400 dark:text-slate-500 group-has-[:checked]:text-white"
+                                                     : "bg-slate-200 dark:bg-slate-900 text-slate-300 dark:text-slate-700")">
+                                <i class="bi bi-incognito"></i>
+                            </div>
+
+                            <span class="font-black text-lg @(esVip ? "text-slate-700 dark:text-slate-200 group-has-[:checked]:text-fuchsia-700 dark:group-has-[:checked]:text-fuchsia-400" : "text-slate-400 dark:text-slate-700")">
+                                Privado
+                                @if (!esVip)
+                                {
+                                    <i class="bi bi-lock-fill ml-1 text-amber-500"></i>
+                                }
+                            </span>
+
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-center mt-1 @(esVip ? "text-slate-400 dark:text-slate-500" : "text-amber-600/70 dark:text-amber-900/50")">
+                                @(esVip ? "Solo mediante invitación" : "Función VIP")
+                            </span>
+
+                            @* Tooltip o Badge informativo para no-VIP *@
+                            @if (!esVip)
+                            {
+                                <div class="absolute -top-3 bg-amber-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-tighter">
+                                    Premium Only
+                                </div>
+                            }
+                        </label>
+
+                    </div>
+                </div>
+
+                @* BOTÓN DE ACCIÓN 3D *@
+                <div class="pt-8">
+                    <button type="submit"
+                            class="group relative w-full bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 text-white font-black py-5 rounded-[2rem] text-xl tracking-tighter shadow-[0_8px_0_rgb(67,56,202)] hover:shadow-[0_6px_0_rgb(67,56,202)] hover:translate-y-[2px] active:shadow-none active:translate-y-[8px] transition-all flex items-center justify-center gap-3">
+                        <i class="bi bi-save2-fill text-2xl"></i>
+                        <span>GUARDAR Y CONTINUAR</span>
+                    </button>
+                </div>
+            </form>
+
+            @* FOOTER / ENLACES SECUNDARIOS *@
+            <div class="flex flex-col sm:flex-row gap-6 items-center justify-between pt-10 mt-10 border-t border-slate-100">
+                <a asp-action="Index" class="group flex items-center gap-2 text-xs font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-[0.2em]">
+                    <i class="bi bi-arrow-left text-lg group-hover:-translate-x-1 transition-transform"></i> Abortar Misión
+                </a>
+
+                <a asp-controller="Trivial" asp-action="CreatePregunta" class="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-colors shadow-sm">
+                    <i class="bi bi-plus-square-dotted text-lg"></i> Gestionar Preguntas Existentes
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
