@@ -93,5 +93,35 @@ namespace ProyectoPersonal.Controllers
             await this.repo.ResolverReporteAsync(idReporte);
             return RedirectToAction("BuzonReportes");
         }
+        [HttpPost]
+        [AuthorizeUsuario]
+        public async Task<IActionResult> ResponderInvitacionPartida(string codigoSala, bool aceptar)
+        {
+            // 1. Obtenemos el ID del usuario de la sesión (el que ha recibido la invitación)
+            string idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(idClaim))
+            {
+                return RedirectToAction("Index", "Home"); // O "Partidas", según tu enrutamiento
+            }
+            int miId = int.Parse(idClaim);
+
+            if (aceptar)
+            {
+                // 2. Si acepta, usamos tu método para cambiar el estado de la invitación a 'aceptada'
+                await this.repo.ActualizarEstadoInvitacionAsync(miId, codigoSala, "aceptada");
+
+                // 3. Redirigimos al usuario a la acción Unirse del controlador de Salas,
+                // pasándole el código de la sala a la que se va a unir.
+                return RedirectToAction("Unirse", "SalasMultijugador", new { codigoSala = codigoSala });
+            }
+            else
+            {
+                // 4. Si rechaza, actualizamos el estado a 'rechazada' (o 'ignorada')
+                await this.repo.ActualizarEstadoInvitacionAsync(miId, codigoSala, "rechazada");
+
+                // 5. Lo devolvemos al Index (donde estaba viendo su buzón)
+                return RedirectToAction("Index", "Partidas"); // Cambia "Partidas" si tu Index principal está en "Home"
+            }
+        }
     }
 }

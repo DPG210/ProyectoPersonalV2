@@ -52,8 +52,8 @@ namespace ProyectoPersonal.Controllers
                 ViewBag.NumReportes = reportesPendientes.Count;
             }
             
-            int miId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            ViewBag.NumSolicitudes = await this.repo.GetNumeroSolicitudesPendientesAsync(miId);
+            
+            ViewBag.NumSolicitudes = await this.repo.GetNumeroSolicitudesPendientesAsync(idUsuario);
             
             return View(categorias);
         }

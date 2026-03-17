@@ -136,5 +136,31 @@ namespace ProyectoPersonal.Controllers
             List<SalaJuego> salasPublicas = await this.repo.GetSalasPublicasAsync();
             return View(salasPublicas);
         }
+        [HttpPost]
+        [AuthorizeUsuario]
+        public async Task<IActionResult> CancelarSalaManual(int idSala)
+        {
+            // 1. Obtenemos el ID del usuario actual (Tipado fuerte)
+            string idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(idClaim))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            int miId = int.Parse(idClaim);
+
+            // 2. Intentamos cancelar la sala
+            bool cancelada = await this.repo.CancelarSalaAnfitrionAsync(idSala, miId);
+
+            // 3. Opcional: Mandar un mensaje de confirmación a la vista
+            if (cancelada)
+            {
+                TempData["MensajeExito"] = "La sala ha sido cerrada y eliminada del radar.";
+            }
+
+            // 4. Lo devolvemos a su pantalla principal
+            return RedirectToAction("Index", "Partidas"); // Cambia "Partidas" si tu index está en "Home"
+        }
     }
 }

@@ -1281,10 +1281,7 @@ public async Task<SalaJuego> GetSalaPorCodigoAsync(string codigoPartida)
         }
         
 
-        internal async Task<int> ActualizarYObtenerCorazonesAsync(string idUsuario)
-        {
-            throw new NotImplementedException();
-        }
+       
         public async Task DeleteUsuario(int idUsuario)
         {
             string sql = " sp_EliminarUsuario @usuario_id";
@@ -1428,6 +1425,24 @@ public async Task<SalaJuego> GetSalaPorCodigoAsync(string codigoPartida)
                 .Where(u => u.Nombre.Contains(nombreBusqueda) && u.IdUsuario != idLogueado)
                 .Take(10) 
                 .ToListAsync();
+        }
+        public async Task<bool> CancelarSalaAnfitrionAsync(int idSala, int idAnfitrion)
+        {
+            
+            string sql = @"UPDATE partidas 
+                   SET estado = 'finalizada' 
+                   WHERE partida_id = @idSala 
+                   AND anfitrion_id = @idAnfitrion 
+                   AND estado = 'esperando'";
+
+            Microsoft.Data.SqlClient.SqlParameter pamSala = new Microsoft.Data.SqlClient.SqlParameter("@idSala", idSala);
+            Microsoft.Data.SqlClient.SqlParameter pamAnf = new Microsoft.Data.SqlClient.SqlParameter("@idAnfitrion", idAnfitrion);
+
+           
+            int filasAfectadas = await this.context.Database.ExecuteSqlRawAsync(sql, pamSala, pamAnf);
+
+            
+            return filasAfectadas > 0;
         }
     }
 }

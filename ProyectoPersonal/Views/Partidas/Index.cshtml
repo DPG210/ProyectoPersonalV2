@@ -85,7 +85,64 @@
                     </a>
                 </div>
             </div>
+            @if (ViewBag.Invitaciones != null)
+            {
+                <div class="w-full animate__animated animate__fadeInDown shrink-0 mb-6 bg-emerald-50/40 dark:bg-emerald-900/10 p-5 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800/50">
 
+                    @* HEADER / BOTÓN DESPLEGABLE *@
+                    <button onclick="toggleBuzonInvitaciones()" class="w-full flex items-center justify-between group cursor-pointer outline-none transition-opacity hover:opacity-80">
+                        <h3 class="text-sm font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] flex items-center gap-3 pl-2">
+                            <i class="bi bi-radar text-xl animate-pulse"></i>
+                            Partidas Entrantes (@ViewBag.Invitaciones.Count)
+                        </h3>
+                        <div class="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-800 group-hover:bg-emerald-600 group-hover:text-white dark:group-hover:bg-emerald-500 transition-colors">
+                            <i id="icono-buzon" class="bi bi-chevron-up transition-transform duration-300"></i>
+                        </div>
+                    </button>
+
+                    @* GRID DE TARJETAS (El div que se oculta/muestra) *@
+                    <div id="grid-invitaciones" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-5 transition-all origin-top">
+                        @foreach (InvitacionPartida inv in @ViewBag.Invitaciones)
+                        {
+                            <div class="bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-900/10 p-5 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30 shadow-lg shadow-emerald-100/40 dark:shadow-black/20 flex flex-col justify-between group hover:-translate-y-1 transition-transform">
+
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center text-2xl text-emerald-600 dark:text-emerald-400 shadow-inner shrink-0">
+                                        <i class="bi bi-joystick"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">Desafío de</p>
+                                        <h4 class="font-black text-slate-800 dark:text-white text-lg truncate leading-tight">@inv.NombreEmisor</h4>
+                                        <p class="text-xs font-bold text-indigo-500 dark:text-indigo-400 truncate mt-1" title="@inv.TituloCuestionario">
+                                            <i class="bi bi-bookmark-star-fill"></i> @inv.TituloCuestionario
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-2 w-full mt-auto">
+                                    @* Botón Rechazar *@
+                                    <form asp-controller="Social" asp-action="ResponderInvitacionPartida" method="post" class="flex-grow">
+                                        <input type="hidden" name="codigoSala" value="@inv.CodigoSala" />
+                                        <input type="hidden" name="aceptar" value="false" />
+                                        <button type="submit" class="w-full bg-white dark:bg-slate-800 text-rose-500 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white font-black py-3 rounded-xl border border-rose-100 dark:border-slate-700 hover:border-transparent transition-all shadow-sm flex items-center justify-center gap-1 text-xs tracking-widest">
+                                            <i class="bi bi-x-lg"></i> IGNORAR
+                                        </button>
+                                    </form>
+
+                                    @* Botón Aceptar (Unirse) *@
+                                    <form asp-controller="Social" asp-action="ResponderInvitacionPartida" method="post" class="flex-grow">
+                                        <input type="hidden" name="codigoSala" value="@inv.CodigoSala" />
+                                        <input type="hidden" name="aceptar" value="true" />
+                                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-xs tracking-widest active:scale-95">
+                                            UNIRSE <i class="bi bi-rocket-takeoff-fill"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
             @* --- DASHBOARD CONFIGURADOR (BENTO BOX) --- *@
             <div id="game-card" class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-indigo-100/40 dark:shadow-black/40 border border-slate-100 dark:border-slate-800 p-6 md:p-8 relative transition-all duration-300 flex-1 flex flex-col min-h-0 overflow-y-auto custom-scrollbar">
 
@@ -561,6 +618,20 @@
             `).join('');
         } catch(e) {
             console.error("Error cargando ranking:", e);
+        }
+        function toggleBuzonInvitaciones() {
+            const grid = document.getElementById('grid-invitaciones');
+            const icono = document.getElementById('icono-buzon');
+
+            // Alternamos la clase oculta de Tailwind
+            grid.classList.toggle('hidden');
+
+            // Giramos la flechita 180 grados para que mire hacia abajo cuando se oculta
+            if (grid.classList.contains('hidden')) {
+                icono.classList.add('rotate-180');
+            } else {
+                icono.classList.remove('rotate-180');
+            }
         }
     }
 </script>
