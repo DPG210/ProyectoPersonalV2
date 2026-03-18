@@ -1,15 +1,8 @@
-﻿@model ProyectoPersonal.Models.Usuario
+﻿@model Usuario
 
-@{
-    ViewData["Title"] = "Registro de Jugador";
-}
 
-@* CAMBIO CLAVE: Usamos 'block' en lugar de 'flex' para evitar conflictos con el Layout.
-   Añadimos 'relative z-10' para asegurar que el formulario esté siempre por encima de los fondos.
-*@
 <div class="min-h-screen w-full block py-12 px-6 relative bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
 
-    @* Decoración de fondo con z-0 *@
     <div class="absolute top-10 right-20 w-72 h-72 bg-fuchsia-400/10 rounded-full blur-3xl animate-pulse z-0"></div>
     <div class="absolute bottom-10 left-20 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl z-0"></div>
 
@@ -17,7 +10,6 @@
 
         <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white dark:border-slate-800 p-10 md:p-12 animate__animated animate__fadeInUp">
 
-            @* HEADER *@
             <div class="text-center mb-10">
                 <div class="relative inline-flex mb-6 group">
                     <div class="absolute inset-0 bg-fuchsia-500 rounded-[2rem] blur-xl opacity-20"></div>
@@ -38,10 +30,8 @@
             <form asp-controller = "Managed" asp-action="CrearUsuario" method="post" class="space-y-6">
                 @Html.AntiForgeryToken()
 
-                @* Sumario de errores del servidor *@
                 <div asp-validation-summary="ModelOnly" class="bg-rose-50 dark:bg-rose-900/20 text-rose-600 p-4 rounded-2xl text-xs font-bold mb-4"></div>
 
-                @* Alias *@
                 <div class="space-y-2">
                     <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Alias de Jugador</label>
                     <div class="relative">
@@ -52,7 +42,6 @@
                     </div>
                 </div>
 
-                @* Email *@
                 <div class="space-y-2">
                     <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Correo de Contacto</label>
                     <div class="relative">
@@ -63,7 +52,6 @@
                     </div>
                 </div>
 
-                @* Password *@
                 <div class="space-y-2">
                     <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Código Secreto</label>
                     <div class="relative">
@@ -74,7 +62,6 @@
                     </div>
                 </div>
 
-                @* BOTÓN DE ENVÍO SIMPLIFICADO *@
                 <div class="pt-6">
                     <button type="submit"
                             class="relative w-full bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black py-5 rounded-[2rem] text-xl shadow-lg transition-all flex items-center justify-center gap-3 active:scale-95">
@@ -84,14 +71,13 @@
                 </div>
             </form>
 
-            @* FOOTER *@
             <div class="mt-12 text-center">
                 <div class="h-px bg-slate-200 dark:bg-slate-800 w-full mb-8 relative">
                     <span class="absolute left-1/2 -translate-x-1/2 -top-3 bg-white dark:bg-slate-900 px-4 text-[10px] font-black text-slate-300 uppercase tracking-widest">Ya soy veterano</span>
                 </div>
                 <p class="text-sm font-bold text-slate-500">
                     ¿Ya tienes una cuenta?
-                    <a asp-action="Login" class="text-fuchsia-600 hover:text-indigo-600 transition-colors ml-1 underline decoration-2 underline-offset-4">
+                    <a asp-action="Login" asp-controller="Managed" class="text-fuchsia-600 hover:text-indigo-600 transition-colors ml-1 underline decoration-2 underline-offset-4">
                         Inicia sesión aquí
                     </a>
                 </p>

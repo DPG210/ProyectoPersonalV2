@@ -10,14 +10,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
     <script>
-        // Solo activamos el modo oscuro si el usuario pulsó la luna en una visita anterior
         if (localStorage.getItem('color-theme') === 'dark') {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
         }
 
-        // La función que apaga y enciende las luces
         function toggleDarkMode() {
             if (document.documentElement.classList.contains('dark')) {
                 document.documentElement.classList.remove('dark');
@@ -31,20 +29,17 @@
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans min-h-screen flex flex-col transition-colors duration-300 selection:bg-violet-200 selection:text-violet-900">
 
-    @* --- CONTENIDO PRINCIPAL --- *@
     <div class="flex-grow flex flex-col relative">
         <main role="main" class="flex-grow w-full flex flex-col">
             @RenderBody()
         </main>
     </div>
 
-    @* --- BOTÓN FLOTANTE DARK MODE GLOBAL --- *@
     <button onclick="toggleDarkMode()" title="Alternar Modo Oscuro" class="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full flex items-center justify-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-lg hover:scale-110 hover:shadow-xl transition-all text-slate-600 dark:text-amber-400 focus:outline-none group">
         <i class="bi bi-moon-stars-fill block dark:hidden text-xl group-hover:-rotate-12 transition-transform"></i>
         <i class="bi bi-sun-fill hidden dark:block text-xl group-hover:rotate-45 transition-transform duration-500"></i>
     </button>
 
-    @* --- FOOTER MINIMALISTA --- *@
     <footer class="bg-transparent py-4 shrink-0 relative z-40 pointer-events-none">
         <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center">
             <p class="text-slate-400 dark:text-slate-600 text-[10px] font-black tracking-widest uppercase">

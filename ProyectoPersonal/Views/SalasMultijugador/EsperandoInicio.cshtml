@@ -1,33 +1,24 @@
-﻿@* No se requiere modelo, usamos ViewBag.CodigoSala *@
+﻿<div class="min-h-[90vh] flex items-center justify-center px-4 py-12 bg-slate-900 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-900 to-black relative overflow-hidden">
 
-@* --- ENVOLTORIO INMERSIVO (SALA DE PRE-DESPLIEGUE) --- *@
-<div class="min-h-[90vh] flex items-center justify-center px-4 py-12 bg-slate-900 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-900 to-black relative overflow-hidden">
-
-    @* Elementos de fondo (Luces estáticas) *@
     <div class="absolute top-10 left-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]"></div>
     <div class="absolute bottom-10 right-10 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[100px]"></div>
 
     <div class="bg-black/60 backdrop-blur-xl border border-white/10 max-w-lg w-full p-10 md:p-14 rounded-[3rem] text-center shadow-[0_0_80px_rgba(99,102,241,0.15)] animate__animated animate__zoomIn relative z-10">
 
-        @* --- RADAR / SPINNER ANIMADO --- *@
         <div class="relative flex items-center justify-center mb-12 h-32 w-32 mx-auto">
-            @* Anillos expansivos *@
             <div class="absolute inset-0 rounded-full border-4 border-indigo-500/30 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
             <div class="absolute inset-2 rounded-full border-4 border-fuchsia-500/20 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite_1s]"></div>
 
-            @* Núcleo Central *@
             <div class="relative flex items-center justify-center h-24 w-24 rounded-[2rem] bg-gradient-to-br from-indigo-600 to-violet-600 shadow-[0_0_30px_rgba(99,102,241,0.5)] z-10 transform rotate-45">
                 <i class="bi bi-rocket-takeoff-fill text-4xl text-white transform -rotate-45 animate-pulse"></i>
             </div>
         </div>
 
-        @* --- TEXTOS DE PREPARACIÓN --- *@
         <h2 class="text-3xl md:text-4xl font-black text-white tracking-tighter mb-4">¡En Posición!</h2>
         <p class="text-slate-400 font-bold mb-10 leading-relaxed text-sm">
             Mantén la conexión activa. El despliegue comenzará automáticamente cuando el Anfitrión inicie la partida.
         </p>
 
-        @* --- ESTADO DE JUGADORES (Panel de Control) --- *@
         <div class="mb-10">
             <div class="inline-flex flex-col items-center p-1 bg-white/5 rounded-3xl border border-white/10">
                 <div class="flex items-center gap-4 px-6 py-4 bg-black/50 rounded-[1.5rem] shadow-inner">
@@ -46,9 +37,7 @@
             </div>
         </div>
 
-        @* --- CÓDIGO DE SALA --- *@
         <div class="bg-slate-900/80 rounded-[2rem] p-6 text-white shadow-inner relative overflow-hidden border border-white/5 group">
-            @* Decoración de fondo en el código *@
             <div class="absolute -right-10 -top-10 text-9xl text-white/5 transform rotate-12 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
                 <i class="bi bi-ticket-detailed-fill"></i>
             </div>
@@ -57,7 +46,6 @@
             <strong class="text-5xl md:text-6xl font-black tracking-tighter text-white relative z-10 drop-shadow-md">@ViewBag.CodigoSala</strong>
         </div>
 
-        @* Indicador de estado de red *@
         <div class="mt-8 text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] flex items-center justify-center gap-3">
             <span class="relative flex h-2.5 w-2.5">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -91,14 +79,11 @@
                 if (data.estado.toLowerCase() === "jugando") {
                     clearInterval(pollingInterval);
 
-                    // Efecto visual rápido antes de redirigir (Gamificación pura)
                     document.getElementById("contador-actuales").innerText = data.capacidadMaxima;
 
-                    // Transformar la UI a un estado de "Despegue"
                     const container = document.querySelector('.bg-black\\/60');
                     container.classList.add('animate__animated', 'animate__zoomOut', 'animate__delay-1s');
 
-                    // Cambiamos el texto central al iniciar
                     const title = document.querySelector('h2');
                     title.innerText = "¡Misión Iniciada!";
                     title.classList.replace('text-white', 'text-emerald-400');
@@ -117,7 +102,6 @@
                         urlDestino = `/Partidas/PreguntasTrivial?nombreCuestionario=${encodeURIComponent(data.cuestionario)}&cantidad=${data.cantidad}&tiempo=${data.tiempo}&codigoSala=${codigoSala}`;
                     }
 
-                    // Retardo visual (1.5s) para que el jugador asimile que la partida ha empezado antes del pantallazo blanco
                     setTimeout(() => {
                         window.location.href = urlDestino;
                     }, 1500);
@@ -127,7 +111,6 @@
             }
         }
 
-        // Consultar cada 2 segundos
         pollingInterval = setInterval(checkEstado, 2000);
         checkEstado();
     </script>

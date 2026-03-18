@@ -3,23 +3,19 @@
 @using System.Security.Claims
 @using ProyectoPersonal.Models
 @{
-    // Limpiamos las variables de sesión viejas
     int? idLogueado = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
     bool esMiPerfil = ViewBag.EsMiPerfil ?? false;
 }
 
 <div class="max-w-6xl mx-auto px-4 py-12 space-y-10 font-sans text-slate-800 dark:text-slate-200 transition-colors duration-500">
 
-    @* --- BOTÓN VOLVER --- *@
     <div class="flex justify-start">
         <a asp-controller="Partidas" asp-action="Index" class="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-black text-xs uppercase tracking-widest px-6 py-3 rounded-full shadow-sm border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2 transform hover:-translate-x-1">
             <i class="bi bi-arrow-left text-lg"></i> Volver
         </a>
     </div>
 
-    @* --- CABECERA: PASAPORTE DE COMANDANTE --- *@
     <div class="relative bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl shadow-indigo-100/50 dark:shadow-black/50 overflow-hidden border border-slate-100 dark:border-slate-800 transition-colors duration-300">
-        @* Banner con degradado Mesh y patrón decorativo *@
         <div class="h-44 bg-gradient-to-br from-violet-600 via-indigo-600 to-fuchsia-500 relative">
             <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
             <div class="absolute -bottom-1 left-0 w-full h-16 bg-gradient-to-t from-white dark:from-slate-900 to-transparent transition-colors"></div>
@@ -27,7 +23,6 @@
 
         <div class="px-6 md:px-10 pb-10 flex flex-col md:flex-row items-center md:items-end -mt-20 gap-8 relative z-10">
 
-            @* FOTO DE AVATAR LOCAL CON EFECTO HOVER PARA EDITAR *@
             <div class="relative group @(esMiPerfil ? "cursor-pointer" : "")" onclick="@(esMiPerfil ? "abrirModalAvatar()" : "")">
                 <div class="p-2 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl transform transition-all duration-500 group-hover:scale-105 group-hover:rotate-2 relative overflow-hidden">
                     <img src="~/images/avatares/@Model.Avatar"
@@ -44,7 +39,6 @@
                 <div class="absolute bottom-4 right-4 w-6 h-6 md:w-8 md:h-8 bg-emerald-500 border-4 border-white dark:border-slate-800 rounded-full shadow-lg animate-pulse transition-colors"></div>
             </div>
 
-            @* DATOS DEL USUARIO *@
             <div class="text-center md:text-left flex-grow space-y-2">
                 <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter transition-colors">
                     @Model.Nombre
@@ -58,12 +52,10 @@
                 </p>
             </div>
 
-            @* ACCIONES RÁPIDAS Y CORAZONES *@
             @if (esMiPerfil)
             {
                 <div class="flex flex-col gap-3 items-center md:items-end w-full md:w-auto">
 
-                    @* Botones Extra Compactos *@
                     <div class="flex flex-wrap justify-center md:justify-end gap-2 w-full">
                         <a asp-controller="Creador" asp-action="CreateCuestionario" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white font-black text-xs uppercase tracking-wider px-4 py-2 rounded-2xl shadow-sm border border-indigo-100 dark:border-indigo-800 transition-all flex items-center gap-1.5 group">
                             <i class="bi bi-plus-circle-fill group-hover:rotate-90 transition-transform"></i> Crear Cuestionario
@@ -79,12 +71,10 @@
                         </button>
                     </div>
 
-                    @* FORMULARIO OCULTO PARA BORRAR LA CUENTA *@
                     <form id="form-borrar-cuenta" asp-controller="Managed" asp-action="DeleteUsuario" method="post" class="hidden">
                         <input type="hidden" name="idUsuario" value="@Model.IdUsuario" />
                     </form>
 
-                    @* Widget de Corazones *@
                     <div class="bg-rose-50 dark:bg-slate-800 border-2 border-rose-100 dark:border-rose-900/30 px-6 py-3 rounded-2xl shadow-lg shadow-rose-100/40 dark:shadow-black/30 flex items-center gap-3 transition-all hover:scale-105 w-full md:w-auto justify-center">
                         <span class="text-3xl drop-shadow-md animate-pulse">❤️</span>
                         <div class="flex flex-col text-left">
@@ -98,7 +88,6 @@
         </div>
     </div>
 
-    @* --- DASHBOARD DE ESTADÍSTICAS (Widgets Bento) --- *@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/30 border border-slate-100 dark:border-slate-800 text-center group hover:-translate-y-2 transition-all duration-300">
             <div class="w-14 h-14 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm group-hover:bg-indigo-500 group-hover:text-white transition-colors">
@@ -125,7 +114,6 @@
         </div>
     </div>
 
-    @* --- SELECTOR DE PESTAÑAS (Pill Style) --- *@
     <div class="bg-slate-200/50 dark:bg-slate-900 p-2 rounded-[2rem] w-full max-w-3xl mx-auto backdrop-blur-md border border-slate-200 dark:border-slate-800 flex justify-between gap-2 shadow-inner transition-colors">
         <button onclick="toggleTab('stats')" id="tab-btn-stats"
                 class="tab-btn flex-grow px-8 py-4 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
@@ -144,10 +132,8 @@
         }
     </div>
 
-    @* --- SECCIÓN 1: HISTORIAL (Listas Estilizadas) --- *@
     <div id="content-stats" class="tab-content hidden space-y-10 animate__animated animate__fadeIn">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            @* Solo *@
             <div class="space-y-6">
                 <h3 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] flex items-center gap-3 transition-colors">
                     <span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span> Misiones Solo
@@ -176,7 +162,6 @@
                 </div>
             </div>
 
-            @* PvP *@
             <div class="space-y-6">
                 <h3 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] flex items-center gap-3 transition-colors">
                     <span class="w-1.5 h-6 bg-fuchsia-500 rounded-full"></span> Escaramuzas PvP
@@ -221,7 +206,6 @@
         </div>
     </div>
 
-    @* --- SECCIÓN 2: RÉCORDS --- *@
     <div id="content-rankings" class="tab-content hidden animate__animated animate__fadeIn">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @if (ViewBag.RankingModos != null && ((IEnumerable<dynamic>)ViewBag.RankingModos).Any())
@@ -248,7 +232,6 @@
         </div>
     </div>
 
-    @* --- SECCIÓN 3: SOCIAL (Comando de Amigos) --- *@
     <div id="content-social" class="tab-content hidden space-y-12 animate__animated animate__fadeIn">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
@@ -257,7 +240,6 @@
                     <i class="bi bi-search-heart text-indigo-500 text-3xl"></i> Reclutar Aliados
                 </h5>
 
-                @* LE HEMOS PUESTO UN ID AL FORMULARIO Y QUITADO EL ACTION *@
                 <form id="form-buscador" class="relative">
                     <input type="text" id="input-busqueda" class="w-full bg-slate-100 dark:bg-slate-950 border-2 border-transparent focus:border-indigo-500 dark:focus:border-indigo-500 rounded-[2rem] py-6 px-10 font-bold text-slate-700 dark:text-slate-200 outline-none transition-all text-lg shadow-inner placeholder-slate-400 dark:placeholder-slate-600" placeholder="Busca por nombre de usuario..." />
                     <button type="submit" class="absolute right-3 top-3 bottom-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black px-10 rounded-3xl transition-all active:scale-95 text-xs tracking-widest shadow-lg">
@@ -265,12 +247,10 @@
                     </button>
                 </form>
 
-                @* LE HEMOS PUESTO UN ID A ESTE DIV PARA PODER INYECTAR LOS RESULTADOS DESDE JS *@
                 <div id="contenedor-resultados" class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 </div>
             </div>
 
-            @* Amigos y Solicitudes *@
             <div class="lg:col-span-5 space-y-8">
                 @if (ViewBag.Solicitudes != null && ((List<UsuarioAmistad>)ViewBag.Solicitudes).Count > 0)
                 {
@@ -325,7 +305,6 @@
     </div>
 </div>
 
-@* --- MODAL CAMBIAR AVATAR --- *@
 @if (esMiPerfil)
 {
     <div id="modalAvatar" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-opacity">
@@ -360,7 +339,7 @@
 }
 
 <script>
-    // Sistema de Pestañas
+    
     function toggleTab(tabName) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
 
@@ -379,7 +358,7 @@
         }
     }
 
-    // Funciones del Modal de Avatar
+    
     function abrirModalAvatar() {
         document.getElementById('modalAvatar').classList.remove('hidden');
     }
@@ -401,7 +380,6 @@
         document.getElementById('btnGuardarAvatar').disabled = false;
     }
 
-    // DOBLE CONFIRMACIÓN DE SWEETALERT2 PARA BORRAR LA CUENTA
     function confirmarBorradoCuenta() {
         const isDark = document.documentElement.classList.contains('dark');
         const bgColor = isDark ? '#0f172a' : '#ffffff';
@@ -442,9 +420,7 @@
         });
     }
 
-    // --- INICIO LÓGICA DE BÚSQUEDA ---
     async function ejecutarBusquedaUsuarios(event) {
-        // Evitamos la recarga de la página (comportamiento por defecto del submit)
         event.preventDefault();
 
         const inputBusqueda = document.getElementsByName("buscar")[0];
@@ -453,7 +429,6 @@
 
         if (textoBusqueda.length < 3) return;
 
-        // Feedback visual de carga
         contenedorResultados.innerHTML = `
             <div class="col-span-2 text-center py-10 animate-pulse">
                 <i class="bi bi-search text-4xl text-indigo-500 mb-2"></i>
@@ -464,14 +439,13 @@
             const response = await fetch(`/Managed/BuscarUsuarios?textoBusqueda=${encodeURIComponent(textoBusqueda)}`);
             const usuarios = await response.json();
 
-            contenedorResultados.innerHTML = ""; // Limpiamos
+            contenedorResultados.innerHTML = ""; 
 
             if (usuarios.length === 0) {
                 contenedorResultados.innerHTML = `<div class="col-span-2 text-center py-10 opacity-50 italic">No se encontraron resultados.</div>`;
                 return;
             }
 
-            // Mapeo manual con tipado explícito para construir las tarjetas
             usuarios.forEach((user) => {
                 const cardHtml = `
                     <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] border-2 border-transparent hover:border-indigo-100 dark:hover:border-indigo-500/50 transition-all group flex flex-col items-center text-center animate__animated animate__fadeIn">
@@ -492,11 +466,9 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        // Inicializar pestaña
         let tabActiva = '@(ViewBag.TabActiva ?? "stats")';
         toggleTab(tabActiva);
 
-        // Vincular el formulario de búsqueda al motor AJAX
         const formSocial = document.querySelector("#content-social form");
         if (formSocial) {
             formSocial.addEventListener("submit", ejecutarBusquedaUsuarios);

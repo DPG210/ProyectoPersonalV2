@@ -1,10 +1,6 @@
-﻿@{
-    ViewData["Title"] = "Pase VIP ";
-}
-
+﻿
 <div class="max-w-5xl mx-auto px-4 py-12 space-y-10 font-sans text-slate-800">
 
-    @* CABECERA *@
     <div class="text-center space-y-4">
         <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-orange-600 tracking-tighter drop-shadow-sm">
             Pase VIP 
@@ -12,7 +8,6 @@
         <p class="text-lg font-bold text-slate-500">Desbloquea tu verdadero potencial y domina el Trivial</p>
     </div>
 
-    @* ALERTAS *@
     @if (TempData["ErrorTienda"] != null)
     {
         <div class="bg-rose-50 border-2 border-rose-200 text-rose-600 p-4 rounded-2xl text-center font-bold max-w-2xl mx-auto">
@@ -20,10 +15,8 @@
         </div>
     }
 
-    @* TARJETAS DE PRECIOS *@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mt-10">
 
-        @* PLAN MENSUAL *@
         <div class="bg-white rounded-[3rem] shadow-xl border border-slate-100 p-8 relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300 flex flex-col">
             <div class="text-center mb-6">
                 <span class="text-5xl filter drop-shadow-md block mb-4 group-hover:scale-110 transition-transform">💎</span>
@@ -49,9 +42,7 @@
             </form>
         </div>
 
-        @* PLAN ANUAL (DESTACADO) *@
         <div class="bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 rounded-[3rem] shadow-2xl shadow-orange-500/30 p-1 relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
-            @* Etiqueta de Ahorro *@
             <div class="absolute top-6 -right-10 bg-white text-orange-600 font-black text-[10px] uppercase tracking-widest py-1 px-10 rotate-45 shadow-md">
                 Ahorras 2 meses
             </div>
