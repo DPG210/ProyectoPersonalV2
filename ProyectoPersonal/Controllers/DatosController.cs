@@ -11,31 +11,12 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using static Azure.Core.HttpHeader;
 
-namespace ProyectoPersonal.Controllers
-{
-    public class DatosController : Controller
-    {
-        Este controlador(DatosController) es un caso especial porque actúa como el "cerebro central" de tus llamadas AJAX(el fetch de JavaScript). Como las distintas pantallas de tu web le piden datos de todo tipo(salas, rankings, preguntas, usuarios...), este es el único controlador que va a necesitar casi todos los repositorios.
-
-Concretamente, vas a necesitar inyectar los 5 repositorios porque estás tocando todas las ramas de tu aplicación en un solo archivo.
-
-Aquí tienes el DatosController completamente refactorizado.He aplicado el tipado fuerte en la caché del ranking (VistaRankingGlobal) para que coincida con el arreglo que hicimos en el paso anterior, y he añadido comprobaciones de seguridad (idClaim) para que no te explote la aplicación si un usuario pierde la sesión mientras juega:
-
-C#
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Memory;
-using ProyectoPersonal.Filter;
-using ProyectoPersonal.Hubs;
-using ProyectoPersonal.Models;
-using ProyectoPersonal.Repositories.Interfaces; // <-- Importamos las interfaces
-using System.Security.Claims;
 
 namespace ProyectoPersonal.Controllers
     {
         public class DatosController : Controller
         {
-            // 1. Inyectamos las 5 interfaces
+            
             private readonly IRepositoryUsuarios repoUsuarios;
             private readonly IRepositorySocial repoSocial;
             private readonly IRepositorySalas repoSalas;
@@ -143,7 +124,6 @@ namespace ProyectoPersonal.Controllers
             {
                 int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-                // ✅ Primero comprobamos que todos respondieron la pregunta anterior
                 bool todosRespondieron = await this.repoJuego.TodosHanRespondidoAsync(partidaId, nuevoIndice - 1);
                 if (!todosRespondieron)
                     return Json(new { todosAvanzaron = false });
@@ -163,7 +143,6 @@ namespace ProyectoPersonal.Controllers
             {
                 int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-                // Calculamos la puntuación base (ejemplo: 10 puntos por acierto)
                 int puntuacion = correctas * 10;
 
                 await this.repoJuego.GuardarHistorialIndividualAsync(idUsuario, cuestionario, puntuacion, correctas, totales);
@@ -198,16 +177,12 @@ namespace ProyectoPersonal.Controllers
             [HttpGet]
             public async Task<JsonResult> GetTopRankings(string modo, string filtro = "", string orden = "desc")
             {
-                // Creamos una clave única para cada combinación de filtro
                 string cacheKey = $"RANKING_{modo}_{filtro}_{orden}";
 
-                // Intentamos buscarlo en la caché
                 if (!this.memoryCache.TryGetValue(cacheKey, out List<dynamic> listaRankings))
                 {
-                    // Si no está (o caducó), lo buscamos en la base de datos
                     listaRankings = await this.repoJuego.GetTopRankingGlobalAsync(modo, filtro, orden);
 
-                    // Lo guardamos en caché durante 5 minutos
                     var cacheOptions = new MemoryCacheEntryOptions()
                         .SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
 
@@ -240,4 +215,5 @@ namespace ProyectoPersonal.Controllers
             }
         }
     } 
-}
+
+

@@ -8,11 +8,11 @@ namespace ProyectoPersonal.Controllers
 {
     public class TiendaController : Controller
     {
-        private RepositoryTrivial repo;
+        private readonly IRepositoryUsuarios repoUsuarios;
 
-        public TiendaController(RepositoryTrivial repo)
+        public TiendaController(IRepositoryUsuarios repoUsuarios)
         {
-            this.repo = repo;
+            this.repoUsuarios = repoUsuarios;
         }
         [AuthorizeUsuario]
         public IActionResult Index()
@@ -27,7 +27,6 @@ namespace ProyectoPersonal.Controllers
         {
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            // Es buena práctica usar una variable para el dominio o sacarlo de la request
             var domain = "https://localhost:7113";
 
             string stripePriceId = "";
@@ -59,7 +58,6 @@ namespace ProyectoPersonal.Controllers
             var service = new SessionService();
             Session session = service.Create(options);
 
-            // Redirección estándar de Stripe para evitar problemas de CORS
             Response.Headers.Add("Location", session.Url);
             return new StatusCodeResult(303);
         }
@@ -69,8 +67,8 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (idUsuario != null)
             {
-                // Llamamos al método que cambia el RolId a 2 que creamos en el repositorio
-                await this.repo.RegistrarPagoYActivarVipAsync(idUsuario,session_id, plan);
+                
+                await this.repoUsuarios.RegistrarPagoYActivarVipAsync(idUsuario,session_id, plan);
                 TempData["MensajeTienda"] = "¡Bienvenido al club VIP! Ya tienes ventajas exclusivas.";
             }
 

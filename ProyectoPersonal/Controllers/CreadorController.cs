@@ -19,7 +19,7 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (idUsuario == null)
             {
-                return RedirectToAction("Login", "Usuarios"); // O como se llame tu controlador de login
+                return RedirectToAction("Login", "Managed"); 
             }
             List<string> cuestionarios = await this.repoCuestionarios.GetCuestionariosAsync(nombreCategoria, idUsuario);
             return View(cuestionarios);
@@ -39,7 +39,7 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (idUsuario == null)
             {
-                return RedirectToAction("Login");
+                return RedirectToAction("Login","Managed");
             }
             await this.repoCuestionarios.CreateCuestionarioAsync(categoria, titulo, descripcion, idUsuario, esPublico);
             List<string> categorias = await this.repoCuestionarios.GetCategoriasAsync();
@@ -50,10 +50,8 @@ namespace ProyectoPersonal.Controllers
         {
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            // 1. Cargamos las categorías (tu código original)
             List<string> categorias = await this.repoCuestionarios.GetCategoriasAsync();
 
-            // 2. Cargamos LOS CUESTIONARIOS DEL USUARIO para el desplegable
             ViewBag.MisCuestionarios = await this.repoCuestionarios.GetCuestionariosUsuarioAsync(idUsuario);
 
             return View(categorias);
@@ -72,9 +70,8 @@ namespace ProyectoPersonal.Controllers
 
             if (!esMiCuestionario)
             {
-                // Intento de manipulación de HTML detectado. Lo mandamos fuera.
                 TempData["Error"] = "Operación denegada. No puedes alterar el cuestionario de otro ";
-                return RedirectToAction("Index", "Trivial");
+                return RedirectToAction("Index", "Partidas");
             }
 
 
@@ -82,7 +79,6 @@ namespace ProyectoPersonal.Controllers
             await this.repoCuestionarios.InsertPreguntasAsync(pregunta.IdCuestionario, pregunta.Enunciado, pregunta.OpcionCorrecta,
                 pregunta.OpcionIncorrecta1, pregunta.OpcionIncorrecta2, pregunta.OpcionIncorrecta3, pregunta.Nivel, pregunta.ExplicacionDidactica);
 
-            // Recargamos el desplegable y mostramos mensaje de éxito
             ViewBag.MisCuestionarios = misCuestionarios;
             ViewData["MensajeExito"] = "¡Pregunta añadida al arsenal con éxito!";
 
