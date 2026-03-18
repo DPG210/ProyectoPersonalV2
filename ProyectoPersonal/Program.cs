@@ -23,7 +23,11 @@ builder.Services.AddControllersWithViews
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSignalR();
-builder.Services.AddTransient<IRepositoryUsuario, RepositoryUsuario>();
+builder.Services.AddTransient<IRepositoryUsuarios, RepositoryUsuarios>();
+builder.Services.AddTransient<IRepositoryCuestionarios, RepositoryCuestionarios>();
+builder.Services.AddTransient<IRepositorySocial, RepositorySocial>();
+builder.Services.AddTransient<IRepositorySalas, RepositorySalas>();
+builder.Services.AddTransient<IRepositoryJuego, RepositoryJuego>();
 builder.Services.AddTransient<IMailKitService,MailKitService>();
 string connectionString = builder.Configuration.GetConnectionString("SqlTrivial");
 builder.Services.AddDbContext<TrivialContext>
