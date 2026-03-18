@@ -149,26 +149,27 @@
     </div>
 
     @* --- MODAL DE REPORTE --- *@
-    <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-all border border-transparent dark:border-slate-700">
-            <div class="bg-rose-500 p-5 text-white flex justify-between items-center">
-                <h3 class="font-black text-lg flex items-center gap-2"><i class="bi bi-shield-exclamation text-xl"></i> Reportar Problema</h3>
-                <button onclick="cerrarModalReporte()" class="text-white/80 hover:text-white font-black text-2xl transition-colors">&times;</button>
+    <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-colors">
+        <div class="bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transition-colors">
+            <div class="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-5 text-slate-800 dark:text-slate-200 flex justify-between items-center transition-colors">
+                <h3 class="font-black text-lg flex items-center gap-2"><i class="bi bi-flag-fill text-rose-500"></i> Reportar Error</h3>
+                <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white font-black text-2xl transition-colors">&times;</button>
             </div>
             <div class="p-8 space-y-5">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Motivo del reporte:</label>
-                    <select id="motivoReporte" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-500 dark:focus:border-rose-500 outline-none font-bold text-slate-700 dark:text-slate-200 cursor-pointer transition-colors">
-                        <option value="Respuesta incorrecta">El sistema no validó mi respuesta correcta</option>
-                        <option value="Falta de ortografía">Pregunta mal redactada o confusa</option>
+                    <label class="block text-sm font-bold text-slate-500 dark:text-slate-400 mb-2">Motivo del reporte:</label>
+                    <select id="motivoReporte" class="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-400 dark:focus:border-rose-500 outline-none text-slate-700 dark:text-slate-200 font-bold transition-colors">
+                        <option value="Respuesta incorrecta">La respuesta correcta es otra</option>
+                        <option value="Falta de ortografía">Falta de ortografía o confusa</option>
+                        <option value="Contenido ofensivo">Contenido inapropiado</option>
                         <option value="Otro">Otro motivo</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Cuéntanos más:</label>
-                    <textarea id="comentarioReporte" rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-500 dark:focus:border-rose-500 outline-none resize-none text-slate-700 dark:text-slate-200 transition-colors" placeholder="Mi respuesta exacta fue..."></textarea>
+                    <label class="block text-sm font-bold text-slate-500 dark:text-slate-400 mb-2">Comentario (opcional):</label>
+                    <textarea id="comentarioReporte" rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-rose-400 dark:focus:border-rose-500 outline-none text-slate-700 dark:text-slate-200 resize-none transition-colors" placeholder="El fallo es..."></textarea>
                 </div>
-                <button onclick="enviarReporte()" id="btnEnviarReporte" class="w-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg">
+                <button onclick="enviarReporte()" id="btnEnviarReporte" class="w-full bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-500 text-white font-black py-4 rounded-xl transition-transform active:scale-95 shadow-md dark:shadow-[0_0_20px_rgba(225,29,72,0.3)]">
                     Enviar Reporte
                 </button>
             </div>
@@ -305,6 +306,9 @@
                     document.getElementById("feedback-UI").classList.add("hidden");
                     document.getElementById("area-apelacion-UI").classList.add("hidden");
                     document.getElementById("btn-siguiente-manual-UI").classList.remove("hidden");
+                    document.getElementById("btn-apelar-UI").classList.remove("hidden");
+                    const msgAntiguo = document.getElementById("msg-punto-concedido");
+                    if(msgAntiguo) msgAntiguo.remove();
 
                     const syncDiv = document.getElementById("sync-container-UI");
                     syncDiv.classList.add("hidden");
@@ -434,10 +438,18 @@
             } catch (error) { console.error(error); }
         }
 
-        document.getElementById("btn-apelar-UI").addEventListener("click", () => {
+        document.getElementById("btn-apelar-UI").addEventListener("click", function() {
             sumarAcierto();
-            playSound(true);
-            document.getElementById("area-apelacion-UI").innerHTML = "<span class='text-emerald-600 dark:text-emerald-400 font-black'>¡Punto concedido!</span>";
+            playSound('correct');
+
+            this.classList.add("hidden");
+
+            const mensajeExito = document.createElement("span");
+            mensajeExito.id = "msg-punto-concedido";
+            mensajeExito.className = "text-emerald-600 dark:text-emerald-400 font-black text-lg animate__animated animate__bounceIn";
+            mensajeExito.innerHTML = "<i class='bi bi-check-circle-fill'></i> ¡Punto concedido!";
+            this.parentElement.appendChild(mensajeExito);
+
             if (esModoMulti) notificarRespuesta(true);
         });
 
@@ -557,6 +569,71 @@
                 finJuego.classList.remove("hidden");
             }, 300);
         }
+        window.abrirModalReporte = function() {
+            if(idPreguntaActualReporte > 0) {
+                document.getElementById('motivoReporte').value = 'Respuesta incorrecta';
+                document.getElementById('comentarioReporte').value = '';
+                document.getElementById('modalReporte').classList.remove('hidden');
+            }
+        };
+
+        window.cerrarModalReporte = function () {
+            document.getElementById('modalReporte').classList.add('hidden');
+        };
+
+        window.enviarReporte = async function() {
+            const btn = document.getElementById('btnEnviarReporte');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin"></i> Enviando...';
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const bgColor = isDark ? '#0f172a' : '#ffffff';
+            const textColor = isDark ? '#f8fafc' : '#1e293b';
+
+            try {
+                const formData = new FormData();
+                formData.append('idPregunta', idPreguntaActualReporte);
+                formData.append('motivo', document.getElementById('motivoReporte').value);
+                formData.append('comentario', document.getElementById('comentarioReporte').value);
+
+                const response = await fetch('/Social/ReportarPregunta', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                if(data.success) {
+                    window.cerrarModalReporte();
+                    Swal.fire({
+                        title: '¡Anomalía Reportada!',
+                        text: 'Hemos recibido tu transmisión. Lo revisaremos enseguida.',
+                        icon: 'success',
+                        background: bgColor,
+                        color: textColor,
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: '<i class="bi bi-check-lg"></i> Entendido'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error en la transmisión',
+                        text: data.message || "No se pudo enviar el reporte.",
+                        icon: 'error',
+                        background: bgColor,
+                        color: textColor,
+                        confirmButtonColor: '#e11d48'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Enlace perdido',
+                    text: 'Hubo un error de conexión con el centro de mando.',
+                    icon: 'warning',
+                    background: bgColor,
+                    color: textColor,
+                    confirmButtonColor: '#f59e0b'
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Enviar Reporte';
+            }
+        };
 
         if(totalPreguntas > 0) cargarPreguntaActual();
     });

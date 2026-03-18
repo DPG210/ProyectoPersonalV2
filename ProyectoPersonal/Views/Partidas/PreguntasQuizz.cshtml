@@ -574,6 +574,11 @@
             btn.disabled = true;
             btn.innerHTML = '<div class="inline-block animate-spin rounded-full h-5 w-5 border-4 border-white border-t-transparent mr-2 align-middle"></div> Enviando...';
 
+            // Detectamos si el usuario está en modo oscuro para pintar la alerta a juego
+            const isDark = document.documentElement.classList.contains('dark');
+            const bgColor = isDark ? '#0f172a' : '#ffffff';
+            const textColor = isDark ? '#f8fafc' : '#1e293b';
+
             try {
                 const formData = new URLSearchParams();
                 formData.append("idPregunta", idPreguntaActualReporte);
@@ -589,14 +594,36 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert("¡Reporte enviado! " + result.message);
                     window.cerrarModalReporte();
+                    Swal.fire({
+                        title: '¡Reporte Enviado!',
+                        text: result.message || 'Lo revisaremos enseguida.',
+                        icon: 'success',
+                        background: bgColor,
+                        color: textColor,
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: '<i class="bi bi-check-lg"></i> Entendido'
+                    });
                 } else {
-                    alert("Error: " + result.message);
+                    Swal.fire({
+                        title: 'Error al reportar',
+                        text: result.message || "No se pudo enviar el reporte.",
+                        icon: 'error',
+                        background: bgColor,
+                        color: textColor,
+                        confirmButtonColor: '#e11d48'
+                    });
                 }
             } catch (error) {
                 console.error("Error al enviar reporte:", error);
-                alert("Hubo un error de conexión al enviar el reporte.");
+                Swal.fire({
+                    title: 'Enlace perdido',
+                    text: 'Hubo un error de conexión con el centro de mando.',
+                    icon: 'warning',
+                    background: bgColor,
+                    color: textColor,
+                    confirmButtonColor: '#f59e0b'
+                });
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = 'Enviar Reporte';
