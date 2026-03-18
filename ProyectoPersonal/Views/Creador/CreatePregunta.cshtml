@@ -1,18 +1,14 @@
 ﻿@model List<string>
 
-@* --- ENVOLTORIO DINÁMICO --- *@
 <div class="min-h-screen bg-slate-50 dark:bg-slate-900 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-100/60 via-slate-50 to-fuchsia-50 dark:from-indigo-900/40 dark:via-slate-900 dark:to-fuchsia-900/20 py-12 px-4 relative overflow-hidden transition-colors duration-500">
 
-    @* Luces de fondo *@
     <div class="absolute top-0 right-20 w-[400px] h-[400px] bg-indigo-300/20 dark:bg-indigo-500/10 rounded-full blur-[100px] animate-pulse pointer-events-none"></div>
     <div class="absolute bottom-0 left-10 w-[300px] h-[300px] bg-fuchsia-300/20 dark:bg-fuchsia-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
     <div class="max-w-4xl mx-auto relative z-10">
 
-        @* --- TARJETA PRINCIPAL (Glassmorphism) --- *@
         <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[3rem] shadow-2xl shadow-indigo-100/50 dark:shadow-black/50 border border-white dark:border-slate-700 p-8 md:p-12 animate__animated animate__fadeInUp transition-colors duration-300">
 
-            @* ENCABEZADO *@
             <div class="text-center mb-12">
                 <div class="relative inline-flex mb-6 group">
                     <div class="absolute inset-0 bg-fuchsia-500 rounded-[2rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
@@ -24,10 +20,8 @@
                 <p class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest">Sintetiza nuevos desafíos para la comunidad</p>
             </div>
 
-            @* --- FORMULARIO --- *@
             <form asp-action="CreatePregunta" method="post" class="space-y-10">
 
-                @* SECCIÓN 1: UBICACIÓN (Adaptada para usar ViewBag.MisCuestionarios) *@
                 <div class="bg-slate-50/80 dark:bg-slate-900/50 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-inner">
                     <h4 class="text-xs font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                         <i class="bi bi-folder2-open text-lg"></i> 1. Destino del Archivo
@@ -43,7 +37,6 @@
                             {
                                 foreach (var cuest in ViewBag.MisCuestionarios)
                                 {
-                                    @* CUIDADO: Verifica si la propiedad de tu modelo es Titulo o Nombre *@
                                     <option value="@cuest.IdCuestionario">@cuest.Titulo</option>
                                 }
                             }
@@ -52,13 +45,11 @@
                     </div>
                 </div>
 
-                @* SECCIÓN 2: EL CONTENIDO *@
                 <div class="space-y-8">
                     <h4 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-4">
                         <i class="bi bi-pencil-square text-lg"></i> 2. Formulación de la Pregunta
                     </h4>
 
-                    @* Enunciado *@
                     <div class="relative group">
                         <span class="absolute left-6 top-6 text-slate-300 dark:text-slate-600 group-focus-within:text-fuchsia-500 dark:group-focus-within:text-fuchsia-400 transition-colors pointer-events-none">
                             <i class="bi bi-quote text-3xl"></i>
@@ -67,10 +58,8 @@
                                   required placeholder="Ej: ¿Cuál es el único satélite natural de la Tierra?"></textarea>
                     </div>
 
-                    @* Grid de Respuestas *@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50">
 
-                        @* Correcta *@
                         <div class="space-y-2 md:col-span-2">
                             <label class="block text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest ml-4">La Verdad Absoluta (Correcta)</label>
                             <div class="relative group">
@@ -79,7 +68,6 @@
                             </div>
                         </div>
 
-                        @* Incorrectas *@
                         <div class="space-y-2">
                             <label class="block text-[10px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-widest ml-4">Distracción 1</label>
                             <div class="relative group">
@@ -106,7 +94,6 @@
                     </div>
                 </div>
 
-                @* SECCIÓN 3: DETALLES EXTRA *@
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-6 pt-6 border-t border-slate-100 dark:border-slate-700">
                     <div class="md:col-span-4 space-y-2">
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Nivel de Dificultad</label>
@@ -132,7 +119,6 @@
                     </div>
                 </div>
 
-                @* BOTÓN DE ACCIÓN 3D *@
                 <div class="pt-8">
                     <button type="submit"
                             class="group relative w-full bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 text-white font-black py-5 rounded-[2rem] text-xl tracking-tighter shadow-[0_8px_0_rgb(67,56,202)] hover:shadow-[0_6px_0_rgb(67,56,202)] hover:translate-y-[2px] active:shadow-none active:translate-y-[8px] transition-all flex items-center justify-center gap-3">
