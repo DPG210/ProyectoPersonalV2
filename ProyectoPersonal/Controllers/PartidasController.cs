@@ -23,37 +23,52 @@ namespace ProyectoPersonal.Controllers
     
     public class PartidasController : Controller
     {
-        private IMemoryCache memoryCache;
-        private RepositoryTrivial repo;
-       
+        private readonly IMemoryCache memoryCache;
         private readonly IHubContext<TrivialHub> hubContext;
-        public PartidasController(RepositoryTrivial repo,  IMemoryCache memoryCache, IHubContext<TrivialHub> hubContext)
+
+        private readonly IRepositoryUsuarios repoUsuarios;
+        private readonly IRepositorySocial repoSocial;
+        private readonly IRepositoryCuestionarios repoCuestionarios;
+        private readonly IRepositorySalas repoSalas;
+        private readonly IRepositoryJuego repoJuego;
+
+        public PartidasController(
+            IMemoryCache memoryCache,
+            IHubContext<TrivialHub> hubContext,
+            IRepositoryUsuarios repoUsuarios,
+            IRepositorySocial repoSocial,
+            IRepositoryCuestionarios repoCuestionarios,
+            IRepositorySalas repoSalas,
+            IRepositoryJuego repoJuego)
         {
-            this.repo= repo;
-            
             this.memoryCache = memoryCache;
             this.hubContext = hubContext;
+            this.repoUsuarios = repoUsuarios;
+            this.repoSocial = repoSocial;
+            this.repoCuestionarios = repoCuestionarios;
+            this.repoSalas = repoSalas;
+            this.repoJuego = repoJuego;
         }
         [AuthorizeUsuario]
         public async Task<IActionResult> Index()
         {
-            List<string> categorias= await this.repo.GetCategoriasAsync();
+            List<string> categorias= await this.repoCuestionarios.GetCategoriasAsync();
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             
-            int corazones = await this.repo.ActualizarYObtenerCorazonesAsync(idUsuario);
+            int corazones = await this.repoUsuarios.ActualizarYObtenerCorazonesAsync(idUsuario);
                 
             ViewBag.Corazones = corazones;
-            ViewBag.Invitaciones = await this.repo.GetInvitacionesPendientesAsync(idUsuario);
-            ViewBag.SolicitudesAmistad = await this.repo.GetSolicitudesRecibidasAsync(idUsuario);
+            ViewBag.Invitaciones = await this.repoSocial.GetInvitacionesPendientesAsync(idUsuario);
+            ViewBag.SolicitudesAmistad = await this.repoSocial.GetSolicitudesRecibidasAsync(idUsuario);
             
             if (User.IsInRole("ADMIN") || User.IsInRole("Admin"))
             {
-                var reportesPendientes = await this.repo.GetReportesAbiertosAsync();
+                var reportesPendientes = await this.repoCuestionarios.GetReportesAbiertosAsync();
                 ViewBag.NumReportes = reportesPendientes.Count;
             }
             
             
-            ViewBag.NumSolicitudes = await this.repo.GetNumeroSolicitudesPendientesAsync(idUsuario);
+            ViewBag.NumSolicitudes = await this.repoSocial.GetNumeroSolicitudesPendientesAsync(idUsuario);
             
             return View(categorias);
         }
@@ -65,7 +80,7 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
 
-            bool tieneVidas = await this.repo.ConsumirCorazonAsync(idUsuario);
+            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(idUsuario);
             if (!tieneVidas)
             {
                 TempData["ErrorVidas"] = "¡Te has quedado sin corazones! Espera un poco o consigue más.";
@@ -77,7 +92,7 @@ namespace ProyectoPersonal.Controllers
             List<int> idsPreguntas;
             if (this.memoryCache.Get(cacheKey) == null)
             {
-                idsPreguntas = await this.repo.GetIdsPreguntasAsync(nombreCuestionario,nivel);
+                idsPreguntas = await this.repoCuestionarios.GetIdsPreguntasAsync(nombreCuestionario,nivel);
 
                 this.memoryCache.Set(cacheKey, idsPreguntas, TimeSpan.FromHours(2));
             }
@@ -96,7 +111,7 @@ namespace ProyectoPersonal.Controllers
             {
                 
                 random = new Random(codigoSala.GetHashCode());
-                var sala = await this.repo.GetSalaPorCodigoAsync(codigoSala);
+                var sala = await this.repoSalas.GetSalaPorCodigoAsync(codigoSala);
                 ViewBag.PartidaId = sala?.IdSala ?? 0;
             }
 
@@ -118,7 +133,7 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
 
-            bool tieneVidas = await this.repo.ConsumirCorazonAsync(idUsuario);
+            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(idUsuario);
             if (!tieneVidas)
             {
                 TempData["ErrorVidas"] = "¡Te has quedado sin corazones! Espera un poco o consigue más.";
@@ -130,7 +145,7 @@ namespace ProyectoPersonal.Controllers
             List<int> idsPreguntas;
             if (this.memoryCache.Get(cacheKey) == null)
             {
-                idsPreguntas = await this.repo.GetIdsPreguntasAsync(nombreCuestionario, nivel);
+                idsPreguntas = await this.repoCuestionarios.GetIdsPreguntasAsync(nombreCuestionario, nivel);
 
                 this.memoryCache.Set(cacheKey, idsPreguntas, TimeSpan.FromHours(2));
             }
@@ -148,7 +163,7 @@ namespace ProyectoPersonal.Controllers
             else
             {
                 random = new Random(codigoSala.GetHashCode());
-                var sala = await this.repo.GetSalaPorCodigoAsync(codigoSala);
+                var sala = await this.repoSalas.GetSalaPorCodigoAsync(codigoSala);
                 ViewBag.PartidaId = sala?.IdSala ?? 0;
             }
 
@@ -173,7 +188,7 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
 
-            bool tieneVidas = await this.repo.ConsumirCorazonAsync(idUsuario);
+            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(idUsuario);
             if (!tieneVidas)
             {
                 TempData["ErrorVidas"] = "Necesitas al menos 1 corazón para el Modo Supervivencia.";
@@ -185,7 +200,7 @@ namespace ProyectoPersonal.Controllers
             List<int> idsPreguntas;
             if (this.memoryCache.Get(cacheKey) == null)
             {
-                idsPreguntas = await this.repo.GetIdsPreguntasAsync(nombreCuestionario, 0);
+                idsPreguntas = await this.repoCuestionarios.GetIdsPreguntasAsync(nombreCuestionario, 0);
 
                 this.memoryCache.Set(cacheKey, idsPreguntas, TimeSpan.FromHours(2));
             }
@@ -208,13 +223,13 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
 
-            bool tieneVidas = await this.repo.ConsumirCorazonAsync(idUsuario);
+            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(idUsuario);
             if (!tieneVidas)
             {
                 TempData["ErrorVidas"] = "Necesitas al menos 1 corazón para jugar a la Ruleta.";
                 return RedirectToAction("Index");
             }
-            List<string> AllTemas = await this.repo.GetAllNombresCuestionariosPublicosAsync(idUsuario);
+            List<string> AllTemas = await this.repoCuestionarios.GetAllNombresCuestionariosPublicosAsync(idUsuario);
 
             Random randomString = new Random();
             string temaFinal = AllTemas[randomString.Next(AllTemas.Count)];
@@ -225,7 +240,7 @@ namespace ProyectoPersonal.Controllers
             List<int> idsPreguntas;
             if (this.memoryCache.Get(cacheKey) == null)
             {
-                idsPreguntas = await this.repo.GetIdsPreguntasAsync(temaFinal,0);
+                idsPreguntas = await this.repoCuestionarios.GetIdsPreguntasAsync(temaFinal,0);
 
                 this.memoryCache.Set(cacheKey, idsPreguntas, TimeSpan.FromHours(2));
             }
@@ -252,7 +267,7 @@ namespace ProyectoPersonal.Controllers
                 return RedirectToAction("Login", "Managed");
             }
 
-            await this.repo.GuardarRankingModoAsync(idUsuario, modoJuego,puntos, nombreCuestionario);
+            await this.repoJuego.GuardarRankingModoAsync(idUsuario, modoJuego,puntos, nombreCuestionario);
 
             TempData["MensajeExito"] = $"¡Partida de Supervivencia terminada! Has conseguido {puntos} puntos.";
 
@@ -263,7 +278,7 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> ValidarPregunta(int idPregunta, string respuestaUsuario)
         {
-            string respuestaReal = await this.repo.GetRespuestaCorrectaAsync(idPregunta);
+            string respuestaReal = await this.repoCuestionarios.GetRespuestaCorrectaAsync(idPregunta);
 
             string respuestaUsuarioLimpia = respuestaUsuario.SimplifyForTrivia();
             string respuestaRealLimpia = respuestaReal.SimplifyForTrivia();

@@ -14,11 +14,20 @@ namespace ProyectoPersonal.Controllers
 {
     public class ManagedController : Controller
     {
-        private RepositoryTrivial repo;
+        private IRepositoryUsuarios repoUsuarios;
+        private IRepositoryJuego repoJuego;
+        private IRepositorySocial repoSocial;
         private IMailKitService mailService;
-        public ManagedController(RepositoryTrivial repo, IMailKitService mailService)
+
+        public ManagedController(
+            IRepositoryUsuarios repoUsuarios,
+            IRepositoryJuego repoJuego,
+            IRepositorySocial repoSocial,
+            IMailKitService mailService)
         {
-            this.repo = repo;
+            this.repoUsuarios = repoUsuarios;
+            this.repoJuego = repoJuego;
+            this.repoSocial = repoSocial;
             this.mailService = mailService;
         }
         public IActionResult Login()
@@ -28,7 +37,7 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
-            Usuario usuario = await this.repo.LoginUsuarioAsync(username, password);
+            Usuario usuario = await this.repoUsuarios.LoginUsuarioAsync(username, password);
             if (usuario != null)
             {
                 ClaimsIdentity identity =
@@ -95,7 +104,7 @@ namespace ProyectoPersonal.Controllers
                 return View(newusuario);
             }
 
-            string duplicado = await this.repo.ComprobarUsuarioDuplicadoAsync(newusuario.Nombre, newusuario.Email);
+            string duplicado = await this.repoUsuarios.ComprobarUsuarioDuplicadoAsync(newusuario.Nombre, newusuario.Email);
 
             if (duplicado == "email")
             {
@@ -119,7 +128,7 @@ namespace ProyectoPersonal.Controllers
             int randomAvatar = new Random().Next(1, 13);
             string avatarDefault = $"avatar{randomAvatar}.png";
             // 2. Guardas el usuario en Base de Datos (con el token y un campo 'Activo' = false)
-            await this.repo.CreateUsuario(newusuario.Nombre, newusuario.Email, newusuario.Password, miToken, salt, passwordHash, avatarDefault);
+            await this.repoUsuarios.CreateUsuario(newusuario.Nombre, newusuario.Email, newusuario.Password, miToken, salt, passwordHash, avatarDefault);
 
             // 3. Envías el correo en 1 sola línea de código
             await mailService.EnviarEmailConfirmacionAsync(newusuario.Email, newusuario.Nombre, miToken);
@@ -134,7 +143,7 @@ namespace ProyectoPersonal.Controllers
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (idUsuario != null)
             {
-                await this.repo.CambiarAvatarAsync(idUsuario, nombreAvatar);
+                await this.repoUsuarios.CambiarAvatarAsync(idUsuario, nombreAvatar);
             }
             return RedirectToAction("Perfil", "Managed");
         }
@@ -148,7 +157,7 @@ namespace ProyectoPersonal.Controllers
             }
 
             // Llamamos al repositorio para que le ponga Activo = 1
-            bool cuentaActivada = await this.repo.ActivarCuentaAsync(token);
+            bool cuentaActivada = await this.repoUsuarios.ActivarCuentaAsync(token);
 
             if (cuentaActivada)
             {
@@ -173,15 +182,15 @@ namespace ProyectoPersonal.Controllers
             bool esMiPerfil = (idPerfil == idUsuario);
 
             // 1. CARGAMOS DATOS DEL PERFIL Y ESTADÍSTICAS
-            InformacionUsuario usuario = await this.repo.PerfilUsuarioAsync(idPerfil);
+            InformacionUsuario usuario = await this.repoUsuarios.PerfilUsuarioAsync(idPerfil);
 
             // Historial Solo
-            List<HistorialIndividualPartidas> historialSolo = await this.repo.GetHistorialIndividualAsync(idPerfil);
+            List<HistorialIndividualPartidas> historialSolo = await this.repoJuego.GetHistorialIndividualAsync(idPerfil);
 
             // NUEVO: Historial Multijugador
-            List<HistorialMultiPartida> historialMulti = await this.repo.GetHistorialMultijugadorAsync(idPerfil);
+            List<HistorialMultiPartida> historialMulti = await this.repoJuego.GetHistorialMultijugadorAsync(idPerfil);
 
-            List<RankingModo> rankingModos = await this.repo.GetRankingsPorUsuarioAsync(idPerfil);
+            List<RankingModo> rankingModos = await this.repoJuego.GetRankingsPorUsuarioAsync(idPerfil);
             ViewBag.RankingModos = rankingModos;
 
             ViewBag.TotalPartidas = historialSolo.Count; // Aquí podrías sumar historialMulti.Count si quieres el total absoluto
@@ -201,12 +210,12 @@ namespace ProyectoPersonal.Controllers
             // 2. LÓGICA SOCIAL
             if (esMiPerfil)
             {
-                ViewBag.Amigos = await this.repo.GetAmistadesAsync(idUsuario);
-                ViewBag.Solicitudes = await this.repo.GetSolicitudesRecibidasAsync(idUsuario);
+                ViewBag.Amigos = await this.repoSocial.GetAmistadesAsync(idUsuario);
+                ViewBag.Solicitudes = await this.repoSocial.GetSolicitudesRecibidasAsync(idUsuario);
 
                 if (!string.IsNullOrEmpty(buscar))
                 {
-                    ViewBag.ResultadosBusqueda = await this.repo.BuscarUsuariosNuevosAsync(idUsuario, buscar);
+                    ViewBag.ResultadosBusqueda = await this.repoSocial.BuscarUsuariosNuevosAsync(idUsuario, buscar);
                     ViewBag.TabActiva = "social";
                 }
             }
@@ -217,7 +226,7 @@ namespace ProyectoPersonal.Controllers
         public async Task<IActionResult> DeleteUsuario(int idusuario)
         {
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            await this.repo.DeleteUsuario(idusuario);
+            await this.repoUsuarios.DeleteUsuario(idusuario);
             return RedirectToAction("Login", "Managed");
         }
         public IActionResult OlvidoPassword()
@@ -230,7 +239,7 @@ namespace ProyectoPersonal.Controllers
         public async Task<IActionResult> OlvidoPassword(string email)
         {
             // 1. El repo hace el update y nos devuelve al usuario con su nuevo token
-            Usuario usuario = await this.repo.GenerarTokenRecuperacionAsync(email);
+            Usuario usuario = await this.repoUsuarios.GenerarTokenRecuperacionAsync(email);
 
             if (usuario != null)
             {
@@ -268,7 +277,7 @@ namespace ProyectoPersonal.Controllers
             string passwordHash = HelperCryptography.EncriptarTextoBasico(passwordConSalt);
 
             // Aquí le pasamos la 'password' en texto plano, el Hash y el Salt
-            bool actualizado = await this.repo.ResetPasswordAsync(token, password, passwordHash, salt);
+            bool actualizado = await this.repoUsuarios.ResetPasswordAsync(token, password, passwordHash, salt);
 
             if (actualizado)
             {
@@ -295,7 +304,7 @@ namespace ProyectoPersonal.Controllers
             string username = User.Identity.Name;
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            Usuario usuarioValido = await this.repo.LoginUsuarioAsync(username, oldPassword);
+            Usuario usuarioValido = await this.repoUsuarios.LoginUsuarioAsync(username, oldPassword);
 
             if (usuarioValido == null)
             {
@@ -307,7 +316,7 @@ namespace ProyectoPersonal.Controllers
             string passwordConSalt = newPassword + salt;
             string passwordHash = HelperCryptography.EncriptarTextoBasico(passwordConSalt);
 
-            await this.repo.CambiarPasswordDesdePerfilAsync(idUsuario, newPassword, passwordHash, salt);
+            await this.repoUsuarios.CambiarPasswordDesdePerfilAsync(idUsuario, newPassword, passwordHash, salt);
 
             ViewData["MENSAJE"] = "¡Tu contraseña ha sido actualizado con éxito!";
             return View(); ;
