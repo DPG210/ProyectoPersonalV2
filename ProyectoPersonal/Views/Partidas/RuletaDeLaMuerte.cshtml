@@ -4,25 +4,18 @@
     ViewData["Title"] = "Ruleta de la Muerte";
 }
 
-@* --- ENVOLTORIO ADAPTADO A MODO CLARO Y OSCURO --- *@
 <div class="min-h-[90vh] bg-red-50 dark:bg-slate-950 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-100 via-white to-red-50 dark:from-red-900/20 dark:via-slate-950 dark:to-black font-sans text-slate-800 dark:text-slate-100 p-4 sm:p-8 rounded-[3rem] border-4 border-red-200 dark:border-red-950 shadow-[0_0_50px_rgba(220,38,38,0.1)] dark:shadow-[0_0_100px_rgba(220,38,38,0.15)] overflow-hidden relative transition-colors duration-500">
-
     @if (Model != null && Model.Any())
     {
         <div class="max-w-4xl mx-auto mt-4 relative z-10">
-
-            @* Botón Reportar Error - Estilo Emergencia *@
             <div class="flex justify-end mb-6">
                 <button onclick="abrirModalReporte()" class="text-red-600 dark:text-red-900 hover:text-red-800 dark:hover:text-red-500 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] bg-white/80 dark:bg-black/40 px-5 py-2 rounded-full border border-red-200 dark:border-red-900/40 hover:border-red-400 dark:hover:border-red-500/50 shadow-lg shadow-red-500/10 dark:shadow-red-900/10">
                     <i class="bi bi-radioactive text-lg"></i> Notificar Error
                 </button>
             </div>
 
-            @* --- HUD DE LA RULETA (Cyber-Panel) --- *@
             <div id="header-stats" class="bg-white/90 dark:bg-black/80 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(220,38,38,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-8 mb-8 border border-red-100 dark:border-red-900/30 hidden transition-colors duration-300">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-left">
-
-                    @* Vidas *@
                     <div class="flex flex-col items-center md:items-start gap-1">
                         <span class="text-[10px] font-black text-red-500 dark:text-red-900 uppercase tracking-widest">Suministro Vital</span>
                         <div class="flex items-center gap-3">
@@ -31,7 +24,6 @@
                         </div>
                     </div>
 
-                    @* Puntuación *@
                     <div class="text-center bg-red-50 dark:bg-red-950/20 py-4 rounded-3xl border border-red-200 dark:border-red-900/10 shadow-inner transition-colors">
                         <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block mb-1">Score Global</span>
                         <h3 class="text-5xl font-black text-red-700 dark:text-white tracking-tighter drop-shadow-sm dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
@@ -39,7 +31,6 @@
                         </h3>
                     </div>
 
-                    @* Temporizador *@
                     <div class="flex flex-col items-center md:items-end gap-1">
                         <span class="text-[10px] font-black text-yellow-600 dark:text-yellow-900 uppercase tracking-widest text-right">Tiempo Crítico</span>
                         <div class="text-4xl font-black text-yellow-500 font-mono flex items-center gap-2 drop-shadow-[0_0_10px_rgba(234,179,8,0.4)]">
@@ -48,16 +39,12 @@
                     </div>
                 </div>
 
-                @* Barra de Energía/Tiempo *@
                 <div id="barra-tiempo-container" class="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-3 mt-8 overflow-hidden border border-slate-300 dark:border-slate-800 hidden shadow-inner transition-colors">
                     <div id="timer-bar" class="bg-gradient-to-r from-red-500 via-orange-400 to-yellow-400 dark:from-red-600 dark:via-orange-500 dark:to-yellow-400 h-full rounded-full transition-all ease-linear shadow-[0_0_15px_rgba(220,38,38,0.5)]" style="width: 100%; transition-duration: 1s;"></div>
                 </div>
             </div>
 
-            @* --- ZONA DE COMBATE (PREGUNTA) --- *@
             <div id="juego-container">
-
-                @* Pantalla Carga - Estilo Radar *@
                 <div id="pantalla-carga" class="text-center py-32">
                     <div class="relative inline-flex items-center justify-center">
                         <div class="w-24 h-24 border-4 border-red-200 dark:border-red-600/20 border-t-red-600 rounded-full animate-spin absolute shadow-[0_0_30px_rgba(220,38,38,0.3)]"></div>
@@ -73,9 +60,7 @@
                     </div>
                 </div>
 
-                @* Tarjeta de Pregunta (Estilo Bunker) *@
                 <div id="game-card" class="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-[3rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-white/5 hidden transform transition-all duration-300">
-
                     <div class="p-10 md:p-14 text-center relative border-b border-slate-200 dark:border-white/5 transition-colors">
                         <div class="absolute top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-red-500 dark:text-red-900 uppercase tracking-[0.5em]">Misión de Supervivencia</div>
                         <h3 id="enunciado-UI" class="text-3xl md:text-4xl font-black leading-tight text-slate-800 dark:text-slate-100 mt-4 drop-shadow-sm dark:drop-shadow-lg transition-colors">
@@ -85,7 +70,6 @@
 
                     <div class="p-8 md:p-12">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="respuestas-container">
-                            @* Inyectado por JS *@
                         </div>
                     </div>
 
@@ -101,7 +85,6 @@
                 </div>
             </div>
 
-            @* --- MODAL DE MUERTE (The End) --- *@
             <div id="gameOverModal" class="hidden fixed inset-0 bg-white/95 dark:bg-black/95 z-50 flex items-center justify-center p-4 transition-colors duration-500">
                 <div class="text-center animate__animated animate__fadeIn space-y-8 max-w-lg">
                     <div class="relative inline-block">
@@ -127,7 +110,6 @@
                 </div>
             </div>
 
-            @* --- MODAL DE REPORTE --- *@
             <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-black/95 z-[60] flex items-center justify-center p-4 backdrop-blur-md">
                 <div class="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-200 dark:border-red-900/50 overflow-hidden transition-colors">
                     <div class="bg-red-50 dark:bg-red-900/20 p-6 text-red-700 dark:text-red-500 border-b border-red-100 dark:border-red-900/30 flex justify-between items-center uppercase tracking-widest font-black text-xs transition-colors">
@@ -154,197 +136,8 @@
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // --- AUDIO CIRCO (Solo suena al morir) ---
-            const sonidoCirco = new Audio('/sounds/sonido_circo.mp3');
-            sonidoCirco.volume = 0.6; // Ajusta el volumen si es muy estridente
+        let idPreguntaActualReporte = 0;
 
-            const idsPreguntas = @Html.Raw(Json.Serialize(Model));
-            let totalPreguntas = idsPreguntas.length;
-            let indexActual = 0;
-            let score = 0;
-            let vidas = @ViewBag.VidasRuleta;
-            let idPreguntaActualReporte = 0;
-
-            let tiempoBase = 30;
-            let tiempoRestante = tiempoBase;
-            let timerInterval = null;
-
-            const gameCard = document.getElementById("game-card");
-            const headerStats = document.getElementById("header-stats");
-            const barraTiempo = document.getElementById("barra-tiempo-container");
-            const pantallaCarga = document.getElementById("pantalla-carga");
-
-            async function cargarPreguntaActual() {
-                if (indexActual >= totalPreguntas) {
-                    mostrarGameOver();
-                    return;
-                }
-
-                if (indexActual === 0) {
-                    pantallaCarga.classList.remove("hidden");
-                    gameCard.classList.add("hidden");
-                } else {
-                    gameCard.style.opacity = 0.5;
-                    gameCard.style.transform = "translateY(10px)";
-                }
-
-                idPreguntaActualReporte = idsPreguntas[indexActual];
-
-                try {
-                    const response = await fetch('/Trivial/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
-                    const p = await response.json();
-
-                    if (p.success) {
-                        document.getElementById("enunciado-UI").innerText = p.enunciado;
-                        document.getElementById("current-index").innerText = indexActual + 1;
-                        document.getElementById("nivel-badge").innerText = p.nivel;
-
-                        let opciones = [
-                            { texto: p.opcionCorrecta, correcta: true },
-                            { texto: p.opcionIncorrecta1, correcta: false },
-                            { texto: p.opcionIncorrecta2, correcta: false },
-                            { texto: p.opcionIncorrecta3, correcta: false }
-                        ].sort(() => Math.random() - 0.5);
-
-                        const container = document.getElementById("respuestas-container");
-                        container.innerHTML = "";
-
-                        // Clases dinámicas adaptadas al Light/Dark mode
-                        const btnClasses = "btn-respuesta group relative w-full p-6 rounded-2xl font-black text-lg text-slate-700 dark:text-slate-400 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-lg hover:border-red-500 dark:hover:border-red-600 hover:text-red-700 dark:hover:text-white transition-all overflow-hidden active:scale-95";
-
-                        opciones.forEach(r => {
-                            const textoSeguro = r.texto ? r.texto.replace(/'/g, "&#39;") : "";
-                            const esCorrectaAttr = r.correcta ? "true" : "false";
-
-                            container.innerHTML += `
-                                <button type="button" class="${btnClasses}" data-correcta="${esCorrectaAttr}" data-nivel="${p.nivel}">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-red-600/5 dark:from-red-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    <span class="relative z-10">${textoSeguro}</span>
-                                </button>
-                            `;
-                        });
-
-                        pantallaCarga.classList.add("hidden");
-                        headerStats.classList.remove("hidden");
-                        barraTiempo.classList.remove("hidden");
-                        gameCard.classList.remove("hidden");
-
-                        setTimeout(() => {
-                            gameCard.style.opacity = 1;
-                            gameCard.style.transform = "translateY(0)";
-                        }, 50);
-
-                        iniciarReloj();
-                    }
-                } catch (error) {
-                    console.error("Error cargando pregunta:", error);
-                }
-            }
-
-            function iniciarReloj() {
-                clearInterval(timerInterval);
-
-                if (indexActual > 0 && indexActual % 10 === 0) {
-                    tiempoBase = Math.max(5, tiempoBase - 5);
-                    // Flash visual de aceleración
-                    document.body.style.backgroundColor = document.documentElement.classList.contains("dark") ? "#450a0a" : "#fee2e2";
-                    setTimeout(() => document.body.style.backgroundColor = "", 100);
-                }
-
-                tiempoRestante = tiempoBase;
-                actualizarUI_Reloj();
-
-                timerInterval = setInterval(() => {
-                    tiempoRestante--;
-                    actualizarUI_Reloj();
-
-                    if (tiempoRestante <= 0) {
-                        clearInterval(timerInterval);
-                        const botones = document.querySelectorAll(".btn-respuesta");
-                        botones.forEach(b => b.disabled = true);
-                        manejarFallo(botones);
-                    }
-                }, 1000);
-            }
-
-            function actualizarUI_Reloj() {
-                const timerText = document.getElementById("timer-text");
-                timerText.innerText = tiempoRestante;
-                let porcentaje = (tiempoRestante / tiempoBase) * 100;
-                const barra = document.getElementById("timer-bar");
-                barra.style.width = porcentaje + "%";
-
-                if (porcentaje <= 25) {
-                    timerText.classList.add("text-red-500", "animate-ping");
-                } else {
-                    timerText.classList.remove("text-red-500", "animate-ping");
-                }
-            }
-
-            document.getElementById("respuestas-container").addEventListener("click", (e) => {
-                const boton = e.target.closest(".btn-respuesta");
-                if (!boton) return;
-
-                clearInterval(timerInterval);
-                const botones = document.querySelectorAll(".btn-respuesta");
-                botones.forEach(b => b.disabled = true);
-
-                const esCorrecta = boton.getAttribute("data-correcta") === "true";
-                const nivel = parseInt(boton.getAttribute("data-nivel"));
-
-                if (esCorrecta) {
-                    boton.className = "btn-respuesta w-full p-6 rounded-2xl font-black text-xl text-emerald-800 dark:text-white bg-emerald-100 dark:bg-emerald-600/20 border-2 border-emerald-400 dark:border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all scale-105";
-                    score += (nivel * 10);
-                    document.getElementById("score").innerText = score;
-                    setTimeout(() => { indexActual++; cargarPreguntaActual(); }, 1200);
-                } else {
-                    boton.className = "btn-respuesta w-full p-6 rounded-2xl font-black text-xl text-red-800 dark:text-white bg-red-100 dark:bg-red-600/20 border-2 border-red-400 dark:border-red-500 shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all";
-                    manejarFallo(botones);
-                }
-            });
-
-            function manejarFallo(botones) {
-                clearInterval(timerInterval);
-                vidas--;
-                document.getElementById("vidas-count").innerText = vidas;
-
-                if (botones) {
-                    botones.forEach(b => {
-                        if (b.getAttribute('data-correcta') === 'true') {
-                            b.className = "btn-respuesta w-full p-6 rounded-2xl font-black text-xl text-emerald-800 dark:text-white border-2 border-emerald-400 dark:border-emerald-500/50 bg-emerald-50 dark:bg-emerald-950/20 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]";
-                        }
-                    });
-                }
-
-                if (vidas <= 0) {
-                    setTimeout(mostrarGameOver, 1500);
-                } else {
-                    setTimeout(() => { indexActual++; cargarPreguntaActual(); }, 2000);
-                }
-            }
-
-            function mostrarGameOver() {
-                clearInterval(timerInterval);
-                document.getElementById("final-score").innerHTML = `${score} <span class="text-2xl text-red-600">pts</span>`;
-                document.getElementById("input-puntos").value = score;
-
-                if (vidas <= 0) {
-                    // Solo troleamos si el jugador murió (se le acabaron las vidas)
-                    try {
-                        sonidoCirco.currentTime = 0;
-                        sonidoCirco.play().catch(e => console.log("Audio bloqueado", e));
-                    } catch(e) {}
-                } else {
-                    // Si ha ganado (se quedó sin preguntas pero con vidas)
-                    document.getElementById("texto-destino").innerText = "¡Has sobrevivido a la ruleta!";
-                    document.getElementById("texto-destino").classList.replace("text-slate-500", "text-emerald-500");
-                }
-
-                document.getElementById('gameOverModal').classList.remove('hidden');
-            }
-
-            // --- 7. FUNCIONES MODAL REPORTE ---
         window.abrirModalReporte = function() {
             if(idPreguntaActualReporte > 0) {
                 document.getElementById('motivoReporte').value = 'Respuesta incorrecta';
@@ -409,13 +202,216 @@
                 btn.disabled = false;
                 btn.innerHTML = 'Enviar Transmisión';
             }
-        }; // <-- FIN DE LA FUNCIÓN ENVIAR REPORTE
+        };
 
-        // --- ARRANQUE DE LA PARTIDA (FUERA DE LA FUNCIÓN DE REPORTE) ---
-        // Le damos 2 segundos para que se vea la animación "Sincronizando Ruleta..."
-        setTimeout(() => {
-            cargarPreguntaActual();
-        }, 2000);
+        document.addEventListener("DOMContentLoaded", () => {
+            const sonidoCirco = new Audio('/sounds/sonido_circo.mp3');
+            sonidoCirco.volume = 0.6;
+            const soundAcierto = new Audio('/sounds/acierto.mp3');
+            const soundError = new Audio('/sounds/fallo.mp3');
+
+            soundAcierto.volume = 0.7;
+            soundError.volume = 0.7;
+
+            const idsPreguntas = @Html.Raw(Json.Serialize(Model));
+            let totalPreguntas = idsPreguntas.length;
+            let indexActual = 0;
+            let score = 0;
+            let vidas = @ViewBag.VidasRuleta;
+
+            let tiempoBase = 30;
+            let tiempoRestante = tiempoBase;
+            let timerInterval = null;
+
+            const gameCard = document.getElementById("game-card");
+            const headerStats = document.getElementById("header-stats");
+            const barraTiempo = document.getElementById("barra-tiempo-container");
+            const pantallaCarga = document.getElementById("pantalla-carga");
+
+            async function cargarPreguntaActual() {
+                if (indexActual >= totalPreguntas) {
+                    mostrarGameOver();
+                    return;
+                }
+
+                if (indexActual === 0) {
+                    pantallaCarga.classList.remove("hidden");
+                    gameCard.classList.add("hidden");
+                } else {
+                    gameCard.style.opacity = 0.5;
+                    gameCard.style.transform = "translateY(10px)";
+                }
+
+                idPreguntaActualReporte = idsPreguntas[indexActual];
+
+                try {
+                    const response = await fetch('/Datos/ObtenerPreguntaPorId?idPregunta=' + idPreguntaActualReporte);
+                    const p = await response.json();
+
+                    if (p.success) {
+                        document.getElementById("enunciado-UI").innerText = p.enunciado;
+                        document.getElementById("current-index").innerText = indexActual + 1;
+                        document.getElementById("nivel-badge").innerText = p.nivel;
+
+                        let opciones = [
+                            { texto: p.opcionCorrecta, correcta: true },
+                            { texto: p.opcionIncorrecta1, correcta: false },
+                            { texto: p.opcionIncorrecta2, correcta: false },
+                            { texto: p.opcionIncorrecta3, correcta: false }
+                        ].sort(() => Math.random() - 0.5);
+
+                        const container = document.getElementById("respuestas-container");
+                        container.innerHTML = "";
+
+                        const btnClasses = "btn-respuesta group relative w-full p-6 rounded-2xl font-black text-lg text-slate-700 dark:text-slate-400 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-lg hover:border-red-500 dark:hover:border-red-600 hover:text-red-700 dark:hover:text-white transition-all overflow-hidden active:scale-95";
+
+                        opciones.forEach(r => {
+                            const textoSeguro = r.texto ? r.texto.replace(/'/g, "&#39;") : "";
+                            const esCorrectaAttr = r.correcta ? "true" : "false";
+
+                            container.innerHTML += `
+                                <button type="button" class="${btnClasses}" data-correcta="${esCorrectaAttr}" data-nivel="${p.nivel}">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-red-600/5 dark:from-red-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <span class="relative z-10">${textoSeguro}</span>
+                                </button>
+                            `;
+                        });
+
+                        pantallaCarga.classList.add("hidden");
+                        headerStats.classList.remove("hidden");
+                        barraTiempo.classList.remove("hidden");
+                        gameCard.classList.remove("hidden");
+
+                        setTimeout(() => {
+                            gameCard.style.opacity = 1;
+                            gameCard.style.transform = "translateY(0)";
+                        }, 50);
+
+                        iniciarReloj();
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+
+            function iniciarReloj() {
+                clearInterval(timerInterval);
+
+                if (indexActual > 0 && indexActual % 10 === 0) {
+                    tiempoBase = Math.max(5, tiempoBase - 5);
+                    document.body.style.backgroundColor = document.documentElement.classList.contains("dark") ? "#450a0a" : "#fee2e2";
+                    setTimeout(() => document.body.style.backgroundColor = "", 100);
+                }
+
+                tiempoRestante = tiempoBase;
+                actualizarUI_Reloj();
+
+                timerInterval = setInterval(() => {
+                    tiempoRestante--;
+                    actualizarUI_Reloj();
+
+                    if (tiempoRestante <= 0) {
+                        clearInterval(timerInterval);
+                        const botones = document.querySelectorAll(".btn-respuesta");
+                        botones.forEach(b => b.disabled = true);
+
+                        try {
+                            soundError.currentTime = 0;
+                            soundError.play().catch(e => {});
+                        } catch(e) {}
+
+                        manejarFallo(botones);
+                    }
+                }, 1000);
+            }
+
+            function actualizarUI_Reloj() {
+                const timerText = document.getElementById("timer-text");
+                timerText.innerText = tiempoRestante;
+                let porcentaje = (tiempoRestante / tiempoBase) * 100;
+                const barra = document.getElementById("timer-bar");
+                barra.style.width = porcentaje + "%";
+
+                if (porcentaje <= 25) {
+                    timerText.classList.add("text-red-500", "animate-ping");
+                } else {
+                    timerText.classList.remove("text-red-500", "animate-ping");
+                }
+            }
+
+            document.getElementById("respuestas-container").addEventListener("click", (e) => {
+                const boton = e.target.closest(".btn-respuesta");
+                if (!boton) return;
+
+                clearInterval(timerInterval);
+                const botones = document.querySelectorAll(".btn-respuesta");
+                botones.forEach(b => b.disabled = true);
+
+                const esCorrecta = boton.getAttribute("data-correcta") === "true";
+                const nivel = parseInt(boton.getAttribute("data-nivel"));
+
+                if (esCorrecta) {
+                    try {
+                        soundAcierto.currentTime = 0;
+                        soundAcierto.play().catch(e => {});
+                    } catch(e) {}
+
+                    boton.className = "btn-respuesta w-full p-6 rounded-2xl font-black text-xl text-emerald-800 dark:text-white bg-emerald-100 dark:bg-emerald-600/20 border-2 border-emerald-400 dark:border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all scale-105";
+                    score += (nivel * 10);
+                    document.getElementById("score").innerText = score;
+                    setTimeout(() => { indexActual++; cargarPreguntaActual(); }, 1200);
+                } else {
+                    try {
+                        soundError.currentTime = 0;
+                        soundError.play().catch(e => {});
+                    } catch(e) {}
+
+                    boton.className = "btn-respuesta w-full p-6 rounded-2xl font-black text-xl text-red-800 dark:text-white bg-red-100 dark:bg-red-600/20 border-2 border-red-400 dark:border-red-500 shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all";
+                    manejarFallo(botones);
+                }
+            });
+
+            function manejarFallo(botones) {
+                clearInterval(timerInterval);
+                vidas--;
+                document.getElementById("vidas-count").innerText = vidas;
+
+                if (botones) {
+                    botones.forEach(b => {
+                        if (b.getAttribute('data-correcta') === 'true') {
+                            b.className = "btn-respuesta w-full p-6 rounded-2xl font-black text-xl text-emerald-800 dark:text-white border-2 border-emerald-400 dark:border-emerald-500/50 bg-emerald-50 dark:bg-emerald-950/20 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]";
+                        }
+                    });
+                }
+
+                if (vidas <= 0) {
+                    setTimeout(mostrarGameOver, 1500);
+                } else {
+                    setTimeout(() => { indexActual++; cargarPreguntaActual(); }, 2000);
+                }
+            }
+
+            function mostrarGameOver() {
+                clearInterval(timerInterval);
+                document.getElementById("final-score").innerHTML = `${score} <span class="text-2xl text-red-600">pts</span>`;
+                document.getElementById("input-puntos").value = score;
+
+                if (vidas <= 0) {
+                    try {
+                        sonidoCirco.currentTime = 0;
+                        sonidoCirco.play().catch(e => {});
+                    } catch(e) {}
+                } else {
+                    document.getElementById("texto-destino").innerText = "¡Has sobrevivido a la ruleta!";
+                    document.getElementById("texto-destino").classList.replace("text-slate-500", "text-emerald-500");
+                }
+
+                document.getElementById('gameOverModal').classList.remove('hidden');
+            }
+
+            setTimeout(() => {
+                cargarPreguntaActual();
+            }, 2000);
         });
     </script>
 }

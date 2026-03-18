@@ -5,7 +5,6 @@ using MimeKit.Text;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 
-// Asegúrate de que el namespace coincida con tu carpeta
 namespace ProyectoPersonal.Services
 {
     public class MailKitService : IMailKitService
@@ -17,10 +16,9 @@ namespace ProyectoPersonal.Services
             _config = config;
         }
 
-        // 1. Método para Recuperar Contraseña
+        
         public async Task EnviarEmailRecuperacionAsync(string emailDestino, string nombreUsuario, string token)
         {
-            // Ajusta el puerto al que estés usando en tu proyecto
             string urlRecuperacion = $"https://localhost:7113/Managed/ResetPassword?token={token}";
 
             string mensajeHtml = $@"
@@ -37,7 +35,6 @@ namespace ProyectoPersonal.Services
             await EnviarEmailBaseAsync(emailDestino, nombreUsuario, "Recupera tu contraseña - Trivial Challenge 🔑", mensajeHtml);
         }
 
-        // 2. Método para Confirmación de Cuenta
         public async Task EnviarEmailConfirmacionAsync(string emailDestino, string nombreUsuario, string token)
         {
             string urlConfirmacion = $"https://localhost:7113/Managed/ActivarCuenta?token={token}";
@@ -53,7 +50,6 @@ namespace ProyectoPersonal.Services
             await EnviarEmailBaseAsync(emailDestino, nombreUsuario, "Confirma tu cuenta en Trivial Challenge 🎮", mensajeHtml);
         }
 
-        // 3. MOTOR DE ENVÍO PRIVADO (Solo uno)
         private async Task EnviarEmailBaseAsync(string destino, string nombre, string asunto, string cuerpoHtml)
         {
             string user = _config.GetValue<string>("MailSettings:Credentials:User");
@@ -70,7 +66,6 @@ namespace ProyectoPersonal.Services
 
             using var smtp = new SmtpClient();
 
-            // Usamos StartTls para puerto 587 (Gmail/Outlook) o SslOnConnect para 465
             SecureSocketOptions options = useSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto;
 
             await smtp.ConnectAsync(host, port, options);

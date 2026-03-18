@@ -15,14 +15,10 @@ namespace ProyectoPersonal.Repositories
         Task<string> FindNombreUsuarioAsync(int idUsuario);
         Task<int> GetIdUsuarioByNombreAsync(string nombre);
         Task DeleteUsuario(int idUsuario);
-
-        // Seguridad y Recuperación
         Task<Usuario> GenerarTokenRecuperacionAsync(string email);
         Task<bool> ResetPasswordAsync(string token, string passwordNormal, string passwordHash, string salt);
         Task CambiarPasswordDesdePerfilAsync(int idUsuario, string passwordNormal, string passwordHash, string salt);
         Task<string> ComprobarUsuarioDuplicadoAsync(string nombre, string email);
-
-        // Economía y VIP
         Task<int> ActualizarYObtenerCorazonesAsync(int idUsuario);
         Task<bool> RecargarPorAnuncioAsync(int idUsuario);
         Task<bool> ConsumirCorazonAsync(int idUsuario);

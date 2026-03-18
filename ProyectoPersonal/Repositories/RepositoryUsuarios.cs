@@ -59,21 +59,18 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task<bool> ActivarCuentaAsync(string token)
         {
-            // 1. Buscamos al usuario que tenga exactamente ese token
             var usuario = await this.context.Usuarios
                                     .FirstOrDefaultAsync(u => u.TokenMail == token);
 
-            // 2. Si lo encontramos, le cambiamos los datos
             if (usuario != null)
             {
-                usuario.Activo = true; // ¡Cuenta activada!
-                usuario.TokenMail = null; // Borramos el token por seguridad para que no se re-use
+                usuario.Activo = true; 
+                usuario.TokenMail = null; 
 
-                await this.context.SaveChangesAsync(); // Guardamos los cambios en SQL
+                await this.context.SaveChangesAsync(); 
                 return true;
             }
 
-            // Si no lo encuentra (token inventado o ya usado)
             return false;
         }
 
@@ -120,13 +117,11 @@ namespace ProyectoPersonal.Repositories
             Usuario usuario = await consulta.FirstOrDefaultAsync();
             if (usuario == null) return 0;
 
-            // Si ya está al máximo, devolvemos el valor y no hacemos cálculos
             if (usuario.CorazonesActuales >= usuario.CorazonesMaximos)
             {
                 return usuario.CorazonesActuales;
             }
 
-            // Si por algún motivo la última recarga es nula, la iniciamos ahora
             if (usuario.UltimaRecarga == null)
             {
                 usuario.UltimaRecarga = DateTime.Now;
@@ -147,12 +142,11 @@ namespace ProyectoPersonal.Repositories
                 if (nuevosCorazones >= usuario.CorazonesMaximos)
                 {
                     usuario.CorazonesActuales = usuario.CorazonesMaximos;
-                    usuario.UltimaRecarga = ahora; // Reseteamos el cronómetro
+                    usuario.UltimaRecarga = ahora; 
                 }
                 else
                 {
                     usuario.CorazonesActuales = nuevosCorazones;
-                    // Sumamos solo los bloques de 30 min para no robarle los minutos sobrantes
                     usuario.UltimaRecarga = usuario.UltimaRecarga.Value.AddMinutes(corazonesGanados * minutosParaRecarga);
                 }
 
@@ -171,27 +165,21 @@ namespace ProyectoPersonal.Repositories
 
             DateTime hoy = DateTime.Now;
 
-            // 1. Reseteamos el contador si es un día nuevo
             if (usuario.FechaUltimoAnuncio == null || usuario.FechaUltimoAnuncio.Value.Date != hoy.Date)
             {
                 usuario.AnunciosVistosHoy = 0;
             }
 
-            // 2. Comprobamos el límite diario (ejemplo: 3 anuncios máximo)
             if (usuario.AnunciosVistosHoy >= 3)
             {
                 return false;
             }
 
-            // 3. Otorgamos el corazón si no está al máximo
             if (usuario.CorazonesActuales < usuario.CorazonesMaximos)
             {
                 usuario.CorazonesActuales++;
                 usuario.AnunciosVistosHoy++;
                 usuario.FechaUltimoAnuncio = hoy;
-
-                // Nota: NO tocamos usuario.UltimaRecarga. 
-                // El cronómetro pasivo sigue corriendo por detrás.
 
                 await this.context.SaveChangesAsync();
                 return true;
@@ -210,7 +198,6 @@ namespace ProyectoPersonal.Repositories
                 return false;
             }
 
-            // Si los corazones estaban al máximo, el cronómetro de recarga debe empezar JUSTO AHORA
             if (usuario.CorazonesActuales == usuario.CorazonesMaximos)
             {
                 usuario.UltimaRecarga = DateTime.Now;
@@ -229,7 +216,6 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task RegistrarPagoYActivarVipAsync(int idUsuario, string sessionId, string tipoPlan)
         {
-            // 1. Definir precio según el plan
             decimal monto = (tipoPlan == "anual") ? 9.99m : 0.99m;
 
 
@@ -244,14 +230,13 @@ namespace ProyectoPersonal.Repositories
 
             this.context.Pagos.Add(pago);
 
-            // 3. Buscar usuario y darle poderes VIP
             var user = await this.context.Usuarios
                 .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
 
             if (user != null)
             {
-                user.RolId = 2; // Rol PREMIUM
-                user.CorazonesActuales = 999; // Corazones infinitos
+                user.RolId = 2; 
+                user.CorazonesActuales = 999; 
                 user.CorazonesMaximos = 999;
             }
 
@@ -291,15 +276,12 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task<string> ComprobarUsuarioDuplicadoAsync(string nombre, string email)
         {
-            // Comprobamos primero el correo (suele ser lo más crítico)
             bool existeEmail = await this.context.Usuarios.AnyAsync(u => u.Email == email);
             if (existeEmail) return "email";
 
-            // Luego comprobamos el nombre
             bool existeNombre = await this.context.Usuarios.AnyAsync(u => u.Nombre == nombre);
             if (existeNombre) return "nombre";
 
-            // Si llega aquí, es que todo está libre
             return null;
         }
 

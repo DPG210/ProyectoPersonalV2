@@ -58,5 +58,36 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <div id="modalAnuncio" class="fixed inset-0 z-[100] hidden bg-slate-900/90 backdrop-blur-xl flex items-center justify-center">
+
+        <div class="relative w-full max-w-4xl bg-black rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/20 border border-slate-800">
+
+            <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-10">
+                <div id="txtContadorAnuncio" class="bg-black/50 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm">
+                    El anuncio se puede saltar en 15s
+                </div>
+
+                <button id="btnCerrarAnuncio" onclick="cerrarYReclamarAnuncio()" class="hidden bg-slate-800 hover:bg-rose-500 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors shadow-lg border border-white/10">
+                    <i class="bi bi-x-lg font-black"></i>
+                </button>
+            </div>
+
+            <video id="videoAnuncio" class="w-full h-[60vh] object-cover pointer-events-none" playsinline>
+                <source id="videoSource" src="" type="video/mp4">
+                Tu navegador no soporta vídeos.
+            </video>
+
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-center gap-4 z-10">
+                <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center text-white text-xl">
+                    <i class="bi bi-controller"></i>
+                </div>
+                <div>
+                    <p class="text-white font-black text-sm uppercase tracking-wider">Patrocinador del Trivial</p>
+                    <p class="text-slate-400 text-xs">Apoya el juego viendo este clip</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </body>
 </html>

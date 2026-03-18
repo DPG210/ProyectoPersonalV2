@@ -13,10 +13,10 @@ namespace ProyectoPersonal.Models
         [Column("usuario_id")]
         public int IdUsuario { get; set; }
 
-        [Column("modo_juego")] // Ej: "Supervivencia", "Ruleta"
+        [Column("modo_juego")] 
         public string ModoJuego { get; set; }
 
-        [Column("cuestionario_id")] // Ej: "MIXTO", "Historia"
+        [Column("cuestionario_id")] 
         public int IdCuestionario { get; set; }
 
         [Column("puntos")]

@@ -30,7 +30,7 @@ namespace ProyectoPersonal.Data
 
             modelBuilder.Entity<ParticipanteEntidad>()
                 .HasKey(p => new { p.IdPartida, p.IdUsuario });
-            // Le decimos a EF Core que esta clase no tiene una Clave Primaria
+            
             modelBuilder.Entity<HistorialIndividualPartidas>()
                 .HasNoKey();
             modelBuilder.Entity<VistaSalaPublica>().HasNoKey();

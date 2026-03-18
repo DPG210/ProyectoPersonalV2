@@ -6,7 +6,6 @@ namespace ProyectoPersonal.Repositories
 {
     public interface IRepositorySocial
     {
-        // Amistades y Búsquedas
         Task EnviarSolicitudAsync(int idEmisor, int idReceptor);
         Task ResponderSolicitudAsync(int idEmisor, int idReceptor, string estado);
         Task<string> GetEstadoAmistadAsync(int idLogueado, int idPerfil);
@@ -15,8 +14,6 @@ namespace ProyectoPersonal.Repositories
         Task<List<UsuarioAmistad>> GetSolicitudesRecibidasAsync(int idLogueado);
         Task<int> GetNumeroSolicitudesPendientesAsync(int idLogueado);
         Task<List<Usuario>> BuscarUsuariosPorNombreAsync(string nombreBusqueda, int idLogueado);
-
-        // Invitaciones a Partidas
         Task RegistrarInvitacionAsync(int idEmisor, int idReceptor, string codigoSala);
         Task<List<InvitacionPartida>> GetInvitacionesPendientesAsync(int idReceptor);
         Task ActualizarEstadoInvitacionAsync(int idReceptor, string codigoSala, string nuevoEstado);

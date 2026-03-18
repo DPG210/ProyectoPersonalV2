@@ -28,14 +28,10 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task<bool> TodosHanRespondidoAsync(int partidaId, int indicePregunta)
         {
-            // Obtenemos los participantes de esa partida específica
             var participantes = from datos in this.context.ParticipantesPartida
                                 where datos.IdPartida == partidaId
                                 select datos;
 
-            // Comprobamos si hay participantes Y si todos cumplen la condición
-            // .Any() verifica que la sala no esté vacía
-            // .All() verifica que todos tengan un índice igual o mayor al actual
             bool existenParticipantes = await participantes.AnyAsync();
             bool todosListos = await participantes.AllAsync(p => p.IndiceRespondido >= indicePregunta);
 
@@ -47,7 +43,7 @@ namespace ProyectoPersonal.Repositories
             var consulta = from p in this.context.ParticipantesPartida
                            join u in this.context.Usuarios on p.IdUsuario equals u.IdUsuario
                            where p.IdPartida == partidaId
-                           orderby p.PuntuacionActual descending // El DESC de SQL
+                           orderby p.PuntuacionActual descending 
                            select new RankingJugador
                            {
                                Nombre = u.Nombre,
@@ -99,7 +95,6 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task<List<HistorialMultiPartida>> GetHistorialMultijugadorAsync(int idUsuario)
         {
-            // 1. Obtenemos las partidas finalizadas donde participó el usuario
             var consultaPartidas = from p in this.context.Partidas
                                    join c in this.context.Cuestionarios on p.IdCuestionario equals c.IdCuestionario
                                    join pp in this.context.ParticipantesPartida on p.IdPartida equals pp.IdPartida
@@ -113,10 +108,8 @@ namespace ProyectoPersonal.Repositories
 
             List<HistorialMultiPartida> historial = await consultaPartidas.ToListAsync();
 
-            // 2. Rellenamos los participantes de cada partida
             foreach (var partida in historial)
             {
-                // Reutilizamos la lógica de ranking o participantes que ya teníamos
                 partida.Participantes = await (from pp in this.context.ParticipantesPartida
                                                join u in this.context.Usuarios on pp.IdUsuario equals u.IdUsuario
                                                where pp.IdPartida == partida.IdPartida
@@ -129,7 +122,6 @@ namespace ProyectoPersonal.Repositories
                                                    HaRespondido = true
                                                }).ToListAsync();
 
-                // El ganador es el primero de la lista (ya que ordenamos por puntuación DESC)
                 if (partida.Participantes.Any())
                 {
                     partida.Ganador = partida.Participantes.First().Nombre;
@@ -155,7 +147,7 @@ namespace ProyectoPersonal.Repositories
         {
             var consulta = from r in this.context.RankingModos
                            join c in this.context.Cuestionarios
-                           on r.IdCuestionario equals c.IdCuestionario // <-- Usa el nombre de la PK de tu clase Cuestionario
+                           on r.IdCuestionario equals c.IdCuestionario 
                            where r.IdUsuario == idUsuario
                            orderby r.Puntos descending
                            select new RankingModo
@@ -165,8 +157,7 @@ namespace ProyectoPersonal.Repositories
                                IdCuestionario = r.IdCuestionario,
                                Puntos = r.Puntos,
                                FechaPartida = r.FechaPartida,
-                               // Llenamos la propiedad "fantasma" con el nombre real
-                               NombreCuestionario = c.Titulo // <-- Cambia 'Nombre' por 'Titulo' o como se llame la propiedad en tu clase Cuestionario
+                               NombreCuestionario = c.Titulo 
                            };
 
             return await consulta.ToListAsync();
@@ -190,17 +181,14 @@ namespace ProyectoPersonal.Repositories
                                puntos = rank.Puntos,
                                cuestionario = quest.Titulo,
                                fecha = rank.FechaPartida,
-                               nombreCategoria = cat.Nombre // Aquí obtenemos el nombre real (ej: "Historia")
+                               nombreCategoria = cat.Nombre 
                            };
 
-            // Aplicamos el filtro si el usuario eligió una categoría en el select
             if (!string.IsNullOrEmpty(filtro))
             {
-                // Comparamos el nombre de la categoría con el filtro que llega de la vista
                 consulta = consulta.Where(r => r.nombreCategoria == filtro);
             }
 
-            // Ordenación
             if (orden == "asc")
             {
                 consulta = consulta.OrderBy(r => r.puntos);
@@ -214,9 +202,6 @@ namespace ProyectoPersonal.Repositories
             return resultados.Cast<dynamic>().ToList();
         }
 
-        Task<List<VistaRankingGlobal>> IRepositoryJuego.GetTopRankingGlobalAsync(string modo, string filtro, string orden)
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 }

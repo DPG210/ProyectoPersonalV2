@@ -20,7 +20,7 @@ namespace ProyectoPersonal.Models
         public string Email { get; set; }
 
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
-        [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres por seguridad.")]
+        [MinLength(3, ErrorMessage = "La contraseña debe tener al menos 3 caracteres por seguridad.")]
         [Column("password")]
         public string Password { get; set; }
         [Column("corazones_actuales")]

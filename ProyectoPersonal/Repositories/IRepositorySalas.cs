@@ -11,10 +11,9 @@ namespace ProyectoPersonal.Repositories
         Task<List<ParticipantePartida>> GetParticipantesSalaAsync(string codigoSala);
         Task<SalaJuego> GetSalaPorCodigoAsync(string codigoPartida);
         Task<List<SalaJuego>> GetSalasPublicasAsync();
-
-        // Control de Estado de las Salas
         Task CambiarEstadoPartidaAsync(int idSala, string nuevoEstado);
         Task<bool> CancelarSalaAnfitrionAsync(int idSala, int idAnfitrion);
         Task FinalizarPartidaMultijugadorAsync(int idPartida);
+        Task<bool> CerrarSalaAdminAsync(int idSala);
     }
 }

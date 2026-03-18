@@ -5,7 +5,6 @@ namespace ProyectoPersonal.Helpers
     
 public static class HelperComparadorRespuestas
     {
-        // Función de Levenshtein (Lógica pura)
         private static int CalcularDistancia(string s, string t)
         {
             int n = s.Length;
@@ -29,23 +28,15 @@ public static class HelperComparadorRespuestas
             return d[n, m];
         }
 
-        // El método que llamarás desde el controlador
         public static bool EsRespuestaValida(string respuestaUsuario, string respuestaReal)
         {
-            // 1. Usamos tu otro helper para limpiar ambas primero
             string userClean = respuestaUsuario.SimplifyForTrivia();
             string realClean = respuestaReal.SimplifyForTrivia();
 
-            // 2. Si son idénticas tras limpiar, ni calculamos Levenshtein
             if (userClean == realClean) return true;
 
-            // 3. Si no, calculamos la distancia
             int distancia = CalcularDistancia(userClean, realClean);
 
-            // 4. Lógica de umbral dinámico:
-            // Si la palabra es muy corta ( < 4 letras), exigimos perfección (distancia 0)
-            // Si es mediana (4-8 letras), permitimos 1 error.
-            // Si es larga (> 8 letras), permitimos hasta 2 errores.
             if (realClean.Length < 4) return distancia == 0;
             if (realClean.Length <= 8) return distancia <= 1;
             return distancia <= 2;

@@ -46,7 +46,6 @@ namespace ProyectoPersonal.Repositories
                 await com.Connection.CloseAsync();
             }
 
-            // 3. Construcción del objeto de retorno
             SalaJuego sala = new SalaJuego
             {
                 IdSala = idPartida,
@@ -80,12 +79,11 @@ namespace ProyectoPersonal.Repositories
         {
             SalaJuego sala = await this.GetSalaPorCodigoAsync(codigoSala);
 
-            // Si la sala no existe, o ya no está esperando, o ya está llena, rebotamos al jugador
             if (sala == null || sala.Estado != "esperando" || sala.TotalJugadores >= sala.CapacidadMaxima)
             {
-                return null; // ¡Sala llena o inaccesible!
+                return null; 
             }
-            // 1. Ejecutamos el SP de acción de forma directa y segura
+            
             string sql = "sp_UnirseAPartida @usuario_id, @codigo_sala";
             SqlParameter pamId = new SqlParameter("@usuario_id", idUsuario);
             SqlParameter pamCod = new SqlParameter("@codigo_sala", codigoSala);
@@ -93,11 +91,13 @@ namespace ProyectoPersonal.Repositories
             await this.context.Database.ExecuteSqlRawAsync(sql, pamId, pamCod);
             if (sala.TotalJugadores + 1 == sala.CapacidadMaxima)
             {
-                // Usamos tu método para cambiar el estado a "jugando"
                 await this.CambiarEstadoPartidaAsync(sala.IdSala, "jugando");
             }
-            // 2. Obtenemos el nombre y montamos el objeto de retorno
-            string nombre = await this.FindNombreUsuarioAsync(idUsuario);
+            string nombre = await this.context.Usuarios
+                           .Where(u => u.IdUsuario == idUsuario)
+                           .Select(u => u.Nombre)
+                           .FirstOrDefaultAsync(); 
+
 
             ParticipantePartida participante = new ParticipantePartida
             {
@@ -128,7 +128,6 @@ namespace ProyectoPersonal.Repositories
 
         public async Task<SalaJuego> GetSalaPorCodigoAsync(string codigoPartida)
         {
-            // 1. Consulta LINQ con Triple JOIN para obtener los datos básicos
             var consulta = from p in this.context.Partidas
                            join u in this.context.Usuarios on p.IdAnfitrion equals u.IdUsuario
                            join c in this.context.Cuestionarios on p.IdCuestionario equals c.IdCuestionario
@@ -146,13 +145,11 @@ namespace ProyectoPersonal.Repositories
                                Publica = p.EsPublica,
                                Tiempo = p.TiempoPregunta,
                                CapacidadMaxima = p.CapacidadMaxima,
-                               Participantes = new List<ParticipantePartida>() // Inicializamos la lista
+                               Participantes = new List<ParticipantePartida>() 
                            };
 
-            // 2. Ejecutamos la consulta
             SalaJuego sala = await consulta.FirstOrDefaultAsync();
 
-            // 3. Si la sala existe, completamos los participantes usando tu otro método
             if (sala != null)
             {
                 sala.Participantes = await this.GetParticipantesSalaAsync(sala.CodigoSala);
@@ -178,7 +175,6 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task<List<SalaJuego>> GetSalasPublicasAsync()
         {
-            // 1. Atacamos directamente a la vista mapeada en el DbContext
             var consulta = from datos in this.context.SalasPublicas
                            select new SalaJuego
                            {
@@ -196,7 +192,6 @@ namespace ProyectoPersonal.Repositories
                                Participantes = new List<ParticipantePartida>()
                            };
 
-            // 2. Ejecutamos y devolvemos la lista en un solo paso
             return await consulta.ToListAsync();
         }
         public async Task<bool> CancelarSalaAnfitrionAsync(int idSala, int idAnfitrion)
@@ -214,6 +209,18 @@ namespace ProyectoPersonal.Repositories
 
             int filasAfectadas = await this.context.Database.ExecuteSqlRawAsync(sql, pamSala, pamAnf);
 
+
+            return filasAfectadas > 0;
+        }
+        public async Task<bool> CerrarSalaAdminAsync(int idSala)
+        {
+            string sql = @"UPDATE partidas 
+                   SET estado = 'finalizada' 
+                   WHERE partida_id = @idSala";
+
+            Microsoft.Data.SqlClient.SqlParameter pamSala = new Microsoft.Data.SqlClient.SqlParameter("@idSala", idSala);
+
+            int filasAfectadas = await this.context.Database.ExecuteSqlRawAsync(sql, pamSala);
 
             return filasAfectadas > 0;
         }

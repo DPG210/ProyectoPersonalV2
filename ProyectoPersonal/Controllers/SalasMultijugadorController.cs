@@ -154,5 +154,23 @@ namespace ProyectoPersonal.Controllers
             }
             return RedirectToAction("Index", "Partidas"); 
         }
+        [HttpPost]
+        [AuthorizeUsuario(Policy ="SoloAdmin")]
+        public async Task<IActionResult> ForzarCierreSala(int idSala)
+        {
+            string rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+            if (rol != "ADMIN") 
+            {
+                TempData["Error"] = "No tienes permisos de moderación.";
+                return RedirectToAction("Index", "Partidas");
+            }
+
+            await this.repoSalas.CerrarSalaAdminAsync(idSala);
+
+            TempData["MensajeExito"] = "Sala purgada del sistema correctamente.";
+
+            return RedirectToAction("BuscadorSalasPublicas");
+        }
     }
 }

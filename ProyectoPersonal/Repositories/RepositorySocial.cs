@@ -35,8 +35,6 @@ namespace ProyectoPersonal.Repositories
                               || (datos.IdUsuario1 == idPerfil && datos.IdUsuario2 == idLogueado)
                            select datos.Estado;
 
-            // ExecuteScalarAsync se traduce aquí en FirstOrDefaultAsync
-            // Si no hay fila, devolverá null automáticamente
             return await consulta.FirstOrDefaultAsync();
         }
 
@@ -54,17 +52,15 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task<List<InformacionUsuario>> BuscarUsuariosNuevosAsync(int idLogueado, string buscar)
         {
-            // 1. Obtenemos los IDs de usuarios con los que ya hay amistad (el "NOT IN" del SQL)
             var idsAmigos = await this.context.Amistades
                 .Where(a => a.IdUsuario1 == idLogueado || a.IdUsuario2 == idLogueado)
                 .Select(a => a.IdUsuario1 == idLogueado ? a.IdUsuario2 : a.IdUsuario1)
                 .ToListAsync();
 
-            // 2. Buscamos usuarios cuyo nombre coincida, que no seas tú y que no estén en la lista anterior
             var consulta = from datos in this.context.Usuarios
-                           where datos.Nombre.Contains(buscar) // Esto es el LIKE '%buscar%'
+                           where datos.Nombre.Contains(buscar) 
                            && datos.IdUsuario != idLogueado
-                           && !idsAmigos.Contains(datos.IdUsuario) // El NOT IN
+                           && !idsAmigos.Contains(datos.IdUsuario) 
                            select new InformacionUsuario
                            {
                                IdUsuario = datos.IdUsuario,
@@ -90,14 +86,12 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task RegistrarInvitacionAsync(int idEmisor, int idReceptor, string codigoSala)
         {
-            // 1. Buscamos el ID de la partida usando LINQ (equivale al primer SELECT)
             var consultaId = from p in this.context.Partidas
                              where p.CodigoSala == codigoSala
                              select p.IdPartida;
 
             int idPartida = await consultaId.FirstOrDefaultAsync();
 
-            // 2. Si la partida existe (id > 0), insertamos la invitación
             if (idPartida != 0)
             {
                 string sql = @"INSERT INTO invitaciones 
@@ -130,7 +124,6 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task ActualizarEstadoInvitacionAsync(int idReceptor, string codigoSala, string nuevoEstado)
         {
-            // Buscamos la invitación que coincida con el usuario y la partida (vía su código)
             string sql = @"UPDATE invitaciones 
                    SET estado = @estado 
                    WHERE usuario_receptor_id = @idRec 

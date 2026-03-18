@@ -24,7 +24,7 @@ namespace ProyectoPersonal.Models
         public string? ComentarioAdicional { get; set; }
 
         [Column("fecha_reporte")]
-        public DateTime? FechaReporte { get; set; } // Le pongo ? porque en tu DB permite NULL (aunque tenga default)
+        public DateTime? FechaReporte { get; set; } 
 
         [Column("estado_reporte")]
         public string EstadoReporte { get; set; }
