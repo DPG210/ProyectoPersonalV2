@@ -6,7 +6,7 @@ using ProyectoPersonal.Models;
 
 namespace ProyectoPersonal.Repositories
 {
-    public class RepositoryUsuarios
+    public class RepositoryUsuarios:IRepositoryUsuarios
     {
         private TrivialContext context;
         public RepositoryUsuarios(TrivialContext context)
@@ -252,6 +252,7 @@ namespace ProyectoPersonal.Repositories
             {
                 user.RolId = 2; // Rol PREMIUM
                 user.CorazonesActuales = 999; // Corazones infinitos
+                user.CorazonesMaximos = 999;
             }
 
             await this.context.SaveChangesAsync();

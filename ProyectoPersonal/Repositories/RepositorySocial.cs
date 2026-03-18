@@ -5,7 +5,7 @@ using ProyectoPersonal.Models;
 
 namespace ProyectoPersonal.Repositories
 {
-    public class RepositorySocial
+    public class RepositorySocial: IRepositorySocial
     {
         private TrivialContext context;
         public RepositorySocial(TrivialContext context)

@@ -23,7 +23,7 @@ builder.Services.AddControllersWithViews
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSignalR();
-builder.Services.AddTransient<RepositoryTrivial>();
+builder.Services.AddTransient<IRepositoryUsuario, RepositoryUsuario>();
 builder.Services.AddTransient<IMailKitService,MailKitService>();
 string connectionString = builder.Configuration.GetConnectionString("SqlTrivial");
 builder.Services.AddDbContext<TrivialContext>

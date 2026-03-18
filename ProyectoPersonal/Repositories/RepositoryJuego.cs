@@ -5,7 +5,7 @@ using ProyectoPersonal.Models;
 
 namespace ProyectoPersonal.Repositories
 {
-    public class RepositoryJuego
+    public class RepositoryJuego : IRepositoryJuego
     {
         private TrivialContext context;
         public RepositoryJuego(TrivialContext context)
@@ -212,6 +212,11 @@ namespace ProyectoPersonal.Repositories
 
             var resultados = await consulta.Take(10).ToListAsync();
             return resultados.Cast<dynamic>().ToList();
+        }
+
+        Task<List<VistaRankingGlobal>> IRepositoryJuego.GetTopRankingGlobalAsync(string modo, string filtro, string orden)
+        {
+            throw new NotImplementedException();
         }
     }
 }

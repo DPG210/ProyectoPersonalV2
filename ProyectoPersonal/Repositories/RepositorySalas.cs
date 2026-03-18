@@ -7,7 +7,7 @@ using System.Data.Common;
 
 namespace ProyectoPersonal.Repositories
 {
-    public class RepositorySalas
+    public class RepositorySalas: IRepositorySalas
     {
         private TrivialContext context;
         public RepositorySalas(TrivialContext context)

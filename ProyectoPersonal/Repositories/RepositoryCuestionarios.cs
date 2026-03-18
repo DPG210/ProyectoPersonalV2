@@ -5,7 +5,7 @@ using ProyectoPersonal.Models;
 
 namespace ProyectoPersonal.Repositories
 {
-    public class RepositoryCuestionarios
+    public class RepositoryCuestionarios:IRepositoryCuestionarios
     {
         private TrivialContext context;
         public RepositoryCuestionarios(TrivialContext context)
