@@ -17,7 +17,7 @@
 
 	<Target Name="TailwindCSS" BeforeTargets="Build">
 		<Message Importance="high" Text="Compilando Tailwind CSS..." />
-		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/output.css" />
+		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/output.css" WorkingDirectory="$(ProjectDir)" />
 	</Target>
 	
 </Project>
