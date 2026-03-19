@@ -25,14 +25,14 @@ namespace ProyectoPersonal.Services
             <div style='font-family: Arial, sans-serif; padding: 20px; background-color: #fff7ed; border-radius: 10px; border: 1px solid #ffedd5;'>
                 <h2 style='color: #ea580c;'>¿Has olvidado tu contraseña?</h2>
                 <p>Hola <strong>{nombreUsuario}</strong>,</p>
-                <p>Hemos recibido una solicitud para restablecer tu clave de acceso al Trivial Challenge.</p>
+                <p>Hemos recibido una solicitud para restablecer tu clave de acceso al PlayUniverse.</p>
                 <p>Si fuiste tú, pulsa el botón de abajo para elegir una nueva contraseña:</p>
                 <br>
                 <a href='{urlRecuperacion}' style='background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;'>Restablecer Contraseña</a>
                 <p style='font-size: 11px; color: #9a3412; margin-top: 20px;'>Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
             </div>";
 
-            await EnviarEmailBaseAsync(emailDestino, nombreUsuario, "Recupera tu contraseña - Trivial Challenge 🔑", mensajeHtml);
+            await EnviarEmailBaseAsync(emailDestino, nombreUsuario, "Recupera tu contraseña - PlayUniverse 🔑", mensajeHtml);
         }
 
         public async Task EnviarEmailConfirmacionAsync(string emailDestino, string nombreUsuario, string token)
@@ -42,12 +42,12 @@ namespace ProyectoPersonal.Services
             string mensajeHtml = $@"
             <div style='font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 10px;'>
                 <h2 style='color: #0d9488;'>¡Bienvenido, {nombreUsuario}!</h2>
-                <p>Gracias por unirte al desafío. Para activar tu cuenta de comandante, haz clic en el botón:</p>
+                <p>Gracias por unirte al desafío. Para activar tu cuenta, haz clic en el botón:</p>
                 <br>
                 <a href='{urlConfirmacion}' style='background-color: #0d9488; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;'>Activar mi cuenta</a>
             </div>";
 
-            await EnviarEmailBaseAsync(emailDestino, nombreUsuario, "Confirma tu cuenta en Trivial Challenge 🎮", mensajeHtml);
+            await EnviarEmailBaseAsync(emailDestino, nombreUsuario, "Confirma tu cuenta en PlayUniverse 🎮", mensajeHtml);
         }
 
         private async Task EnviarEmailBaseAsync(string destino, string nombre, string asunto, string cuerpoHtml)
@@ -59,7 +59,7 @@ namespace ProyectoPersonal.Services
             bool useSsl = _config.GetValue<bool>("MailSettings:Server:Ssl");
 
             var email = new MimeMessage();
-            email.From.Add(new MailboxAddress("Trivial Challenge", user));
+            email.From.Add(new MailboxAddress("PlayUniverse", user));
             email.To.Add(new MailboxAddress(nombre, destino));
             email.Subject = asunto;
             email.Body = new TextPart(TextFormat.Html) { Text = cuerpoHtml };
