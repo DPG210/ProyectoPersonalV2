@@ -8,12 +8,22 @@
 }
 
 <div class="max-w-6xl mx-auto px-4 py-12 space-y-10 font-sans text-slate-800 dark:text-slate-200 transition-colors duration-500">
-
-    <div class="flex justify-start">
-        <a asp-controller="Partidas" asp-action="Index" class="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-black text-xs uppercase tracking-widest px-6 py-3 rounded-full shadow-sm border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2 transform hover:-translate-x-1">
-            <i class="bi bi-arrow-left text-lg"></i> Volver
-        </a>
-    </div>
+     @if (esMiPerfil)
+    {
+        <div class="flex justify-start">
+            <a asp-controller="Partidas" asp-action="Index" class="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-black text-xs uppercase tracking-widest px-6 py-3 rounded-full shadow-sm border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2 transform hover:-translate-x-1">
+                <i class="bi bi-arrow-left text-lg"></i> Volver
+            </a>
+        </div>            
+    }
+    else
+    {
+        <div class="flex justify-start">
+            <a asp-controller="Managed" asp-action="Perfil" asp-route-id="@idLogueado" class="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-black text-xs uppercase tracking-widest px-6 py-3 rounded-full shadow-sm border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2 transform hover:-translate-x-1">
+                <i class="bi bi-arrow-left text-lg"></i> Volver
+            </a>
+        </div>
+    }
 
     <div class="relative bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl shadow-indigo-100/50 dark:shadow-black/50 overflow-hidden border border-slate-100 dark:border-slate-800 transition-colors duration-300">
         <div class="h-44 bg-gradient-to-br from-violet-600 via-indigo-600 to-fuchsia-500 relative">
