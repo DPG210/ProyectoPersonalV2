@@ -52,7 +52,6 @@ async function cerrarYReclamarAnuncio() {
     const modal = document.getElementById('modalAnuncio');
     const video = document.getElementById('videoAnuncio');
 
-    // Aquí sí, cuando el usuario decide darle a la X, paramos todo
     modal.classList.add('hidden');
     video.pause();
 
@@ -72,26 +71,30 @@ async function cerrarYReclamarAnuncio() {
                 color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#0f172a'
             }).then(() => {
 
-                // MAGIA EN VIVO: Buscamos tu contenedor
+                // AQUÍ ES DONDE VA LA MAGIA (dentro del .then de Swal)
                 const contenedorCorazones = document.getElementById('contador-corazones');
 
                 if (contenedorCorazones) {
-                    let corazonesHTML = '';
+                    let corazonesSpans = '';
 
-                    // Recreamos tu lógica del backend (5 corazones máximo) pero en el frontend
                     for (let i = 0; i < 5; i++) {
                         if (i < data.corazones) {
-                            // Corazón LLENO (añadimos animación de latido)
-                            corazonesHTML += `<span class="text-2xl drop-shadow-md transform hover:scale-125 transition-transform cursor-pointer animate__animated animate__heartBeat">❤️</span>`;
+                            corazonesSpans += `<span class="text-2xl drop-shadow-md transform hover:scale-125 transition-transform cursor-pointer animate__animated animate__heartBeat">❤️</span>`;
                         } else {
-                            // Corazón VACÍO
-                            corazonesHTML += `<span class="text-2xl grayscale opacity-20 dark:opacity-30">🤍</span>`;
+                            corazonesSpans += `<span class="text-2xl grayscale opacity-20 dark:opacity-30">🤍</span>`;
                         }
                     }
 
-                    // Actualizamos el HTML de golpe
-                    contenedorCorazones.innerHTML = corazonesHTML;
+                    contenedorCorazones.innerHTML = `
+                        <div class="flex items-center gap-4 bg-rose-50 dark:bg-rose-900/20 px-6 py-2.5 rounded-[2rem] border border-rose-100 dark:border-rose-800/50 shadow-inner transition-colors duration-300">
+                            <span class="text-[10px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-widest hidden sm:block">Suministro Vital</span>
+                            <div class="flex gap-1.5">
+                                ${corazonesSpans}
+                            </div>
+                        </div>
+                    `;
                 }
+
             });
 
         } else {

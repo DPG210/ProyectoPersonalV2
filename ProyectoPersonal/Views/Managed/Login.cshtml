@@ -1,49 +1,48 @@
-﻿<div class="min-h-[90vh] flex items-center justify-center px-6 relative overflow-hidden bg-slate-50 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-100 via-slate-50 to-fuchsia-50">
+﻿<div class="min-h-[100dvh] flex items-center justify-center px-6 relative overflow-hidden bg-slate-50 dark:bg-slate-950 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-100 via-slate-50 to-fuchsia-50 dark:from-indigo-950 dark:via-slate-950 dark:to-fuchsia-950 transition-colors duration-500">
 
-    <div class="absolute top-20 left-20 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl animate-pulse"></div>
-    <div class="absolute bottom-20 right-20 w-96 h-96 bg-fuchsia-400/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-20 left-20 w-64 h-64 bg-indigo-400/10 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
+    <div class="absolute bottom-20 right-20 w-96 h-96 bg-fuchsia-400/10 dark:bg-fuchsia-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="w-full max-w-md relative z-10">
-        
-        <div class="bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white p-10 md:p-12 animate__animated animate__fadeInUp">
 
-           
+        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white dark:border-slate-800 p-10 md:p-12 animate__animated animate__fadeInUp transition-colors duration-300">
+
             <div class="text-center mb-8 flex flex-col items-center">
-                
+
                 <div class="relative inline-block mb-4">
-                    
+
                     <div class="absolute inset-0 bg-indigo-500 rounded-full blur-[40px] opacity-30 pointer-events-none"></div>
 
                     <img src="~/images/logo/logo.png"
-                         class="relative z-10 w-48 sm:w-56 h-auto object-contain drop-shadow-[0_15px_15px_rgba(67,56,202,0.3)]"
+                         class="relative z-10 w-48 sm:w-56 h-auto object-contain drop-shadow-[0_15px_15px_rgba(67,56,202,0.3)] dark:drop-shadow-[0_15px_15px_rgba(67,56,202,0.5)]"
                          alt="Trivial Challenge Logo" />
                 </div>
 
-                <h2 class="text-2xl font-black text-slate-800 tracking-tight">¡Hola de nuevo!</h2>
-                <p class="text-slate-500 font-bold mt-2 uppercase tracking-widest text-[10px]">Acceso a la central de juego</p>
+                <h2 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight transition-colors">¡Hola de nuevo!</h2>
+                <p class="text-slate-500 dark:text-slate-400 font-bold mt-2 uppercase tracking-widest text-[10px] transition-colors">Acceso a la central de juego</p>
             </div>
 
             <form asp-action="Login" asp-controller="Managed" method="post" class="space-y-8">
                 <div class="space-y-2">
-                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Identificación</label>
+                    <label class="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-4 transition-colors">Identificación</label>
                     <div class="relative group">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors">
                             <i class="bi bi-person-fill text-xl"></i>
                         </span>
                         <input type="text" name="username"
-                               class="w-full bg-slate-100/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 pl-14 pr-6 font-bold text-slate-700 outline-none transition-all shadow-inner"
+                               class="w-full bg-slate-100/50 dark:bg-slate-950/50 border-2 border-transparent dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-2xl py-4 pl-14 pr-6 font-bold text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 outline-none transition-all shadow-inner"
                                placeholder="Email o Usuario" required />
                     </div>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Clave de Acceso</label>
+                    <label class="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-4 transition-colors">Clave de Acceso</label>
                     <div class="relative group">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors">
                             <i class="bi bi-lock-fill text-xl"></i>
                         </span>
                         <input type="password" name="password"
-                               class="w-full bg-slate-100/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 pl-14 pr-6 font-bold text-slate-700 outline-none transition-all shadow-inner"
+                               class="w-full bg-slate-100/50 dark:bg-slate-950/50 border-2 border-transparent dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-2xl py-4 pl-14 pr-6 font-bold text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 outline-none transition-all shadow-inner"
                                placeholder="••••••••" required />
                     </div>
                 </div>
@@ -58,26 +57,25 @@
             </form>
 
             <div class="mt-12 text-center">
-                <div class="h-px bg-slate-100 w-full mb-8 relative">
-                    <span class="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-4 text-[10px] font-black text-slate-300 uppercase tracking-widest">Nuevo Jugador</span>
+                <div class="h-px bg-slate-100 dark:bg-slate-800 w-full mb-8 relative transition-colors">
+                    <span class="absolute left-1/2 -translate-x-1/2 -top-3 bg-white dark:bg-slate-900 px-4 text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest transition-colors">Nuevo Jugador</span>
                 </div>
-                <p class="text-sm font-bold text-slate-500">
+                <p class="text-sm font-bold text-slate-500 dark:text-slate-400 transition-colors">
                     ¿No tienes cuenta?
                     <a asp-controller="Managed" asp-action="CrearUsuario"
-                       class="text-indigo-600 hover:text-fuchsia-600 transition-colors ml-1 underline decoration-2 underline-offset-4">
+                       class="text-indigo-600 dark:text-indigo-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-400 transition-colors ml-1 underline decoration-2 underline-offset-4">
                         Regístrate gratis
                     </a>
                 </p>
             </div>
-            <div class="mt-12 text-center">
+            <div class="mt-8 text-center">
                 <a asp-controller="Managed" asp-action="OlvidoPassword"
-                    class="text-indigo-600 hover:text-fuchsia-600 transition-colors ml-1 underline decoration-2 underline-offset-4">
-                    Olvide la contraseña
+                   class="text-indigo-600 dark:text-indigo-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-400 transition-colors text-sm font-bold underline decoration-2 underline-offset-4">
+                    Olvidé la contraseña
                 </a>
             </div>
         </div>
 
-        
     </div>
 </div>
 

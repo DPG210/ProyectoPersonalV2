@@ -15,7 +15,12 @@
     <PackageReference Include="Stripe.net" Version="50.4.1" />
   </ItemGroup>
 
-	<Target Name="TailwindCSS" BeforeTargets="Build">
+	<Target Name="NpmInstall" BeforeTargets="TailwindCSS" Condition="!Exists('$(ProjectDir)node_modules')">
+		<Message Importance="high" Text="Instalando dependencias npm..." />
+		<Exec Command="npm install" WorkingDirectory="$(ProjectDir)" />
+	</Target>
+
+	<Target Name="TailwindCSS" BeforeTargets="Build" Inputs="$(ProjectDir)wwwroot/css/app.css" Outputs="$(ProjectDir)wwwroot/css/output.css">
 		<Message Importance="high" Text="Compilando Tailwind CSS..." />
 		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/output.css" WorkingDirectory="$(ProjectDir)" />
 	</Target>

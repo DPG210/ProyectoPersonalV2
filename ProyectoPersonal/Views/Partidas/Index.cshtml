@@ -10,7 +10,7 @@
             <div class="flex flex-col xl:flex-row justify-between items-center gap-4">
 
                 <div class="flex flex-wrap items-center justify-center xl:justify-start gap-3 md:gap-5 w-full xl:w-auto shrink-0">
-
+                    <img src="~/images/logo/logo.png" class="h-10 md:h-12 w-auto object-contain drop-shadow-[0_10px_15px_rgba(79,70,229,0.25)] dark:drop-shadow-[0_10px_15px_rgba(79,70,229,0.5)]" alt="Trivial Logo" />
                     <a asp-controller="Managed" asp-action="Perfil" class="group flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 p-1.5 pr-4 rounded-[2rem] shadow-inner hover:shadow-md border border-slate-200 dark:border-slate-600 transition-all cursor-pointer">
                         <div class="relative shrink-0">
                             <img src="~/images/avatares/@(User.FindFirst("Avatar")?.Value ?? "avatar1.png")" alt="Perfil" class="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:scale-105 transition-transform" />
@@ -22,8 +22,7 @@
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Ver Perfil</span>
                         </div>
                     </a>
-
-                    <img src="~/images/logo/logo.png" class="h-10 md:h-12 w-auto object-contain drop-shadow-[0_10px_15px_rgba(79,70,229,0.25)] dark:drop-shadow-[0_10px_15px_rgba(79,70,229,0.5)]" alt="Trivial Logo" />
+                    
                 </div>
 
                 <div id="contador-corazones" class="flex justify-center w-full xl:w-auto shrink-0">
@@ -602,5 +601,6 @@
                 refreshCurrentRanking();
             }
         }, 20000);
+           
     });
 </script>
