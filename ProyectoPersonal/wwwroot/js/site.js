@@ -12,14 +12,12 @@ function abrirAnuncio() {
     const btnCerrar = document.getElementById('btnCerrarAnuncio');
     const txtContador = document.getElementById('txtContadorAnuncio');
 
-    // 1. Selección aleatoria del vídeo
     const numeroAleatorio = Math.floor(Math.random() * 2) + 1;
     const rutaVideo = `/videos/anuncio${numeroAleatorio}.mp4`;
 
     source.src = rutaVideo;
     video.load();
 
-    // 2. Reseteo visual
     let tiempoRestante = 15;
     modal.classList.remove('hidden');
     btnCerrar.classList.add('hidden');
@@ -32,13 +30,12 @@ function abrirAnuncio() {
 
     if (adTimerInterval) clearInterval(adTimerInterval);
 
-    // 3. Cuenta atrás independiente del vídeo
     adTimerInterval = setInterval(() => {
         tiempoRestante--;
         if (tiempoRestante > 0) {
             txtContador.innerText = `El anuncio se puede saltar en ${tiempoRestante}s`;
         } else {
-            // Pasaron los 15s. Mostramos la X, PERO NO pausamos el vídeo.
+            
             clearInterval(adTimerInterval);
             txtContador.innerText = "¡Recompensa lista!";
             txtContador.classList.replace('text-white', 'text-emerald-400');
@@ -71,7 +68,6 @@ async function cerrarYReclamarAnuncio() {
                 color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#0f172a'
             }).then(() => {
 
-                // AQUÍ ES DONDE VA LA MAGIA (dentro del .then de Swal)
                 const contenedorCorazones = document.getElementById('contador-corazones');
 
                 if (contenedorCorazones) {
