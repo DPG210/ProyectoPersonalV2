@@ -1,7 +1,7 @@
 {
   "devDependencies": {
-    "@tailwindcss/cli": "^4.2.1",
-    "tailwindcss": "^4.2.1"
+    "@tailwindcss/cli": "^4.2.2",
+    "tailwindcss": "^4.2.2"
   },
   "name": "proyectopersonalv2",
   "version": "1.0.0",
@@ -20,5 +20,6 @@
   "bugs": {
     "url": "https://github.com/DPG210/ProyectoPersonalV2/issues"
   },
-  "homepage": "https://github.com/DPG210/ProyectoPersonalV2#readme"
+  "homepage": "https://github.com/DPG210/ProyectoPersonalV2#readme",
+  "type": "commonjs"
 }
