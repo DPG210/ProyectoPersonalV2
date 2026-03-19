@@ -428,15 +428,18 @@ namespace ProyectoPersonal.Repositories
             return await consulta.FirstOrDefaultAsync();
         }
 
-        public async Task<List<string>> GetAmistadesAsync(int idUsuario)
+        public async Task<List<UsuarioAmistad>> GetAmistadesAsync(int idUsuario)
         {
             var consulta = from amistad in this.context.Amistades
                            join usuario in this.context.Usuarios
-                           on (amistad.IdUsuario1 == idUsuario ? amistad.IdUsuario2 : amistad.IdUsuario1)
-                           equals usuario.IdUsuario
+                           on (amistad.IdUsuario1 == idUsuario ? amistad.IdUsuario2 : amistad.IdUsuario1) equals usuario.IdUsuario
                            where (amistad.IdUsuario1 == idUsuario || amistad.IdUsuario2 == idUsuario)
                                  && amistad.Estado == "ACEPTADA"
-                           select usuario.Nombre;
+                           select new UsuarioAmistad
+                           {
+                               IdUsuario = usuario.IdUsuario,
+                               Nombre = usuario.Nombre
+                           };
 
             return await consulta.ToListAsync();
         }

@@ -200,15 +200,14 @@ namespace ProyectoPersonal.Controllers
             }
 
             string idClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            int miId = int.Parse(idClaim);
+            int idLogueado = int.Parse(idClaim);
 
-            List<Usuario> usuarios = await this.repoSocial.BuscarUsuariosPorNombreAsync(textoBusqueda, miId);
+            List<InformacionUsuario> usuarios = await this.repoSocial.BuscarUsuariosNuevosAsync(idLogueado, textoBusqueda);
 
             var resultados = usuarios.Select(u => new
             {
                 idUsuario = u.IdUsuario,
                 nombre = u.Nombre,
-                avatar = u.Avatar ?? "avatar1.png"
             });
 
             return Json(resultados);

@@ -9,7 +9,7 @@ namespace ProyectoPersonal.Repositories
         Task EnviarSolicitudAsync(int idEmisor, int idReceptor);
         Task ResponderSolicitudAsync(int idEmisor, int idReceptor, string estado);
         Task<string> GetEstadoAmistadAsync(int idLogueado, int idPerfil);
-        Task<List<string>> GetAmistadesAsync(int idUsuario);
+        Task<List<UsuarioAmistad>> GetAmistadesAsync(int idUsuario);
         Task<List<InformacionUsuario>> BuscarUsuariosNuevosAsync(int idLogueado, string buscar);
         Task<List<UsuarioAmistad>> GetSolicitudesRecibidasAsync(int idLogueado);
         Task<int> GetNumeroSolicitudesPendientesAsync(int idLogueado);
