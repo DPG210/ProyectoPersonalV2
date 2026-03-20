@@ -28,6 +28,26 @@ namespace ProyectoPersonal.Controllers
 
             return RedirectToAction("Perfil","Managed");
         }
+        [HttpPost]
+        [AuthorizeUsuario]
+        public async Task<IActionResult> EnviarInvitacionPartida(int idAmigo, string codigoSala)
+        {
+            try
+            {
+               
+                int miId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+              
+                await this.repoSocial.RegistrarInvitacionAsync(miId, idAmigo, codigoSala);
+
+                
+                return Json(new { success = true });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { success = false, message = "Error al enviar" });
+            }
+        }
         [AuthorizeUsuario]
         public async Task<IActionResult> AceptarAmigo(int idAmigo)
         {
