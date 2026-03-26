@@ -423,29 +423,24 @@ namespace ProyectoPersonal.Repositories
         }
         public async Task<Usuario> LoginUsuarioAsync(string username, string password)
         {
-            var consulta = from datos in this.context.Usuarios
-                           where datos.Email == username || datos.Nombre == username
-                           select datos;
-            Usuario usuario = await consulta.FirstOrDefaultAsync();
+            var usuario = await this.context.Usuarios
+                .FirstOrDefaultAsync(u => u.Email == username || u.Nombre == username);
 
-            if (usuario == null) return null;
+            if (usuario == null)
+                return null;
 
-            var consultaSeguridad = from datos in this.context.Logins
-                                    where datos.IdUsuario == usuario.IdUsuario
-                                    select datos;
-            Login seguridad = await consultaSeguridad.FirstOrDefaultAsync();
+            var seguridad = await this.context.Logins
+                .FirstOrDefaultAsync(d => d.IdUsuario == usuario.IdUsuario);
 
-            if (seguridad == null) return null;
+            if (seguridad == null)
+                return null;
 
-            string passwordConSalt = password + seguridad.Salt;
-            string hashCalculado = HelperCryptography.EncriptarTextoBasico(passwordConSalt);
+            string hashCalculado = HelperCryptography.EncriptarTextoBasico(password + seguridad.Salt);
 
-            if (hashCalculado == seguridad.PasswordHash)
-            {
-                return usuario;
-            }
+            if (hashCalculado != seguridad.PasswordHash || !usuario.Activo)
+                return null;
 
-            return null;
+            return usuario;
         }
         public async Task<bool> ActivarCuentaAsync(string token)
         {

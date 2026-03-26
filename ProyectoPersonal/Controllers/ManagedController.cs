@@ -38,6 +38,7 @@ namespace ProyectoPersonal.Controllers
         public async Task<IActionResult> Login(string username, string password)
         {
             Usuario usuario = await this.repoUsuarios.LoginUsuarioAsync(username, password);
+
             if (usuario != null)
             {
                 ClaimsIdentity identity =
@@ -61,10 +62,15 @@ namespace ProyectoPersonal.Controllers
                 await HttpContext.SignInAsync
                     (CookieAuthenticationDefaults.AuthenticationScheme,
                     userPrincipal);
-            }
-            TempData.Clear();
-            return RedirectToAction("Index", "Partidas");
 
+                TempData.Clear();
+                return RedirectToAction("Index", "Partidas");
+            }
+            else
+            {
+                ViewData["ERROR"] = "Usuario o contraseña incorrectos.";
+                return View();
+            }
 
         }
         public async Task<IActionResult> Logout()
