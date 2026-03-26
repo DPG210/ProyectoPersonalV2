@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace ProyectoPersonal.Controllers
 {
-    public class CreadorController : Controller
+    public class CreadorController : BaseController
     {
         private IRepositoryCuestionarios repoCuestionarios;
         public CreadorController(IRepositoryCuestionarios repoCuestionarios)
@@ -16,19 +16,12 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> Cuestionarios(string nombreCategoria)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario == null)
-            {
-                return RedirectToAction("Login", "Managed"); 
-            }
-            List<string> cuestionarios = await this.repoCuestionarios.GetCuestionariosAsync(nombreCategoria, idUsuario);
+            List<string> cuestionarios = await this.repoCuestionarios.GetCuestionariosAsync(nombreCategoria, UsuarioActualId);
             return View(cuestionarios);
         }
         [AuthorizeUsuario]
         public async Task<IActionResult> CreateCuestionario()
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
             List<string> categorias = await this.repoCuestionarios.GetCategoriasAsync();
             return View(categorias);
         }
@@ -36,23 +29,16 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCuestionario(string categoria, string titulo, string descripcion, bool esPublico)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario == null)
-            {
-                return RedirectToAction("Login","Managed");
-            }
-            await this.repoCuestionarios.CreateCuestionarioAsync(categoria, titulo, descripcion, idUsuario, esPublico);
+            await this.repoCuestionarios.CreateCuestionarioAsync(categoria, titulo, descripcion, UsuarioActualId, esPublico);
             List<string> categorias = await this.repoCuestionarios.GetCategoriasAsync();
             return View(categorias);
         }
         [HttpGet]
         public async Task<IActionResult> CreatePregunta()
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
             List<string> categorias = await this.repoCuestionarios.GetCategoriasAsync();
 
-            ViewBag.MisCuestionarios = await this.repoCuestionarios.GetCuestionariosUsuarioAsync(idUsuario);
+            ViewBag.MisCuestionarios = await this.repoCuestionarios.GetCuestionariosUsuarioAsync(UsuarioActualId);
 
             return View(categorias);
         }
@@ -61,10 +47,8 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePregunta(Pregunta pregunta)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             List<string> categorias = await this.repoCuestionarios.GetCategoriasAsync();
-            var misCuestionarios = await this.repoCuestionarios.GetCuestionariosUsuarioAsync(idUsuario);
-
+            var misCuestionarios = await this.repoCuestionarios.GetCuestionariosUsuarioAsync(UsuarioActualId);
 
             bool esMiCuestionario = misCuestionarios.Any(c => c.IdCuestionario == pregunta.IdCuestionario);
 
@@ -73,8 +57,6 @@ namespace ProyectoPersonal.Controllers
                 TempData["Error"] = "Operación denegada. No puedes alterar el cuestionario de otro ";
                 return RedirectToAction("Index", "Partidas");
             }
-
-
 
             await this.repoCuestionarios.InsertPreguntasAsync(pregunta.IdCuestionario, pregunta.Enunciado, pregunta.OpcionCorrecta,
                 pregunta.OpcionIncorrecta1, pregunta.OpcionIncorrecta2, pregunta.OpcionIncorrecta3, pregunta.Nivel, pregunta.ExplicacionDidactica);

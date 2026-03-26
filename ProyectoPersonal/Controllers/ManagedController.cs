@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ProyectoPersonal.Controllers
 {
-    public class ManagedController : Controller
+    public class ManagedController : BaseController
     {
         private IRepositoryUsuarios repoUsuarios;
         private IRepositoryJuego repoJuego;
@@ -174,11 +174,11 @@ namespace ProyectoPersonal.Controllers
         [HttpGet]
         public async Task<IActionResult> Perfil(int? id, string buscar = null, string tab = null)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
+            
+            if (UsuarioActualId == null) return RedirectToAction("Login", "Usuarios");
 
-            int idPerfil = id ?? idUsuario;
-            bool esMiPerfil = (idPerfil == idUsuario);
+            int idPerfil = id ?? UsuarioActualId;
+            bool esMiPerfil = (idPerfil == UsuarioActualId);
 
             
             InformacionUsuario usuario = await this.repoUsuarios.PerfilUsuarioAsync(idPerfil);
@@ -207,12 +207,12 @@ namespace ProyectoPersonal.Controllers
             
             if (esMiPerfil)
             {
-                ViewBag.Amigos = await this.repoSocial.GetAmistadesAsync(idUsuario);
-                ViewBag.Solicitudes = await this.repoSocial.GetSolicitudesRecibidasAsync(idUsuario);
+                ViewBag.Amigos = await this.repoSocial.GetAmistadesAsync(UsuarioActualId);
+                ViewBag.Solicitudes = await this.repoSocial.GetSolicitudesRecibidasAsync(UsuarioActualId);
 
                 if (!string.IsNullOrEmpty(buscar))
                 {
-                    ViewBag.ResultadosBusqueda = await this.repoSocial.BuscarUsuariosNuevosAsync(idUsuario, buscar);
+                    ViewBag.ResultadosBusqueda = await this.repoSocial.BuscarUsuariosNuevosAsync(UsuarioActualId, buscar);
                     ViewBag.TabActiva = "social";
                 }
             }
@@ -224,10 +224,10 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteUsuario(int idusuario)
         {
-            int idActual = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            
 
             bool esAdmin = User.IsInRole("ADMIN");
-            bool esPropioUsuario = idActual == idusuario;
+            bool esPropioUsuario = UsuarioActualId == idusuario;
 
             if (!esAdmin && !esPropioUsuario)
                 return RedirectToAction("ErrorAcceso", "Managed");
@@ -309,10 +309,7 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> CambiarPassword(string oldPassword, string newPassword)
         {
-            string username = User.Identity.Name;
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-            Usuario usuarioValido = await this.repoUsuarios.LoginUsuarioAsync(username, oldPassword);
+            Usuario usuarioValido = await this.repoUsuarios.LoginUsuarioAsync(UsuarioActualNombre, oldPassword);
 
             if (usuarioValido == null)
             {
@@ -324,7 +321,7 @@ namespace ProyectoPersonal.Controllers
             string passwordConSalt = newPassword + salt;
             string passwordHash = HelperCryptography.EncriptarTextoBasico(passwordConSalt);
 
-            await this.repoUsuarios.CambiarPasswordDesdePerfilAsync(idUsuario, newPassword, passwordHash, salt);
+            await this.repoUsuarios.CambiarPasswordDesdePerfilAsync(UsuarioActualId, newPassword, passwordHash, salt);
 
             ViewData["MENSAJE"] = "¡Tu contraseña ha sido actualizado con éxito!";
             return View(); ;

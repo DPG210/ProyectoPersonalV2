@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace ProyectoPersonal.Controllers
 {
-    public class SocialController : Controller
+    public class SocialController : BaseController
     {
         private readonly IRepositorySocial repoSocial;
         private readonly IRepositoryCuestionarios repoCuestionarios;
@@ -20,9 +20,7 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> EnviarInvitacion(int idDestino)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            await this.repoSocial.EnviarSolicitudAsync(idUsuario, idDestino);
+            await this.repoSocial.EnviarSolicitudAsync(UsuarioActualId, idDestino);
 
             TempData["TabActiva"] = "social";
 
@@ -35,10 +33,7 @@ namespace ProyectoPersonal.Controllers
             try
             {
                
-                int miId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-              
-                await this.repoSocial.RegistrarInvitacionAsync(miId, idAmigo, codigoSala);
+                await this.repoSocial.RegistrarInvitacionAsync(UsuarioActualId, idAmigo, codigoSala);
 
                 
                 return Json(new { success = true });
@@ -51,10 +46,7 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> AceptarAmigo(int idAmigo)
         {
-
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            await this.repoSocial.ResponderSolicitudAsync(idAmigo, idUsuario, "ACEPTADA");
+            await this.repoSocial.ResponderSolicitudAsync(idAmigo, UsuarioActualId, "ACEPTADA");
 
             TempData["TabActiva"] = "social";
             return RedirectToAction("Perfil","Managed");
@@ -63,9 +55,7 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> RechazarAmigo(int idAmigo)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            await this.repoSocial.ResponderSolicitudAsync(idAmigo, idUsuario, "RECHAZADA");
+            await this.repoSocial.ResponderSolicitudAsync(idAmigo, UsuarioActualId, "RECHAZADA");
 
             TempData["TabActiva"] = "social";
 
@@ -75,17 +65,9 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<JsonResult> ReportarPregunta(int idPregunta, string motivo, string comentario)
         {
-
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            if (idUsuario == null)
-            {
-                return Json(new { success = false, message = "Debes iniciar sesión para reportar." });
-            }
-
             try
             {
-                await this.repoCuestionarios.EnviarReporteAsync(idPregunta, idUsuario, motivo, comentario);
+                await this.repoCuestionarios.EnviarReporteAsync(idPregunta, UsuarioActualId, motivo, comentario);
                 return Json(new { success = true, message = "Reporte enviado correctamente. ¡Gracias por tu ayuda!" });
             }
             catch (Exception ex)
@@ -111,22 +93,16 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> ResponderInvitacionPartida(string codigoSala, bool aceptar)
         {
-            string idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(idClaim))
-            {
-                return RedirectToAction("Index", "Home"); 
-            }
-            int miId = int.Parse(idClaim);
 
             if (aceptar)
             {
-                await this.repoSocial.ActualizarEstadoInvitacionAsync(miId, codigoSala, "aceptada");
+                await this.repoSocial.ActualizarEstadoInvitacionAsync(UsuarioActualId, codigoSala, "aceptada");
 
                 return RedirectToAction("Unirse", "SalasMultijugador", new { codigoSala = codigoSala });
             }
             else
             {
-                await this.repoSocial.ActualizarEstadoInvitacionAsync(miId, codigoSala, "rechazada");
+                await this.repoSocial.ActualizarEstadoInvitacionAsync(UsuarioActualId, codigoSala, "rechazada");
                 return RedirectToAction("Index", "Partidas"); 
             }
         }

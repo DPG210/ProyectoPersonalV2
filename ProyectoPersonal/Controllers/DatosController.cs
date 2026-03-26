@@ -14,7 +14,7 @@ using static Azure.Core.HttpHeader;
 
 namespace ProyectoPersonal.Controllers
 {
-    public class DatosController : Controller
+    public class DatosController : BaseController
     {
 
         private readonly IRepositoryUsuarios repoUsuarios;
@@ -46,16 +46,13 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<JsonResult> GetCuestionariosJson(string nombreCategoria)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            var cuestionarios = await this.repoCuestionarios.GetCuestionariosAsync(nombreCategoria, idUsuario);
+            var cuestionarios = await this.repoCuestionarios.GetCuestionariosAsync(nombreCategoria, UsuarioActualId);
             return Json(cuestionarios);
         }
         [AuthorizeUsuario]
         public async Task<JsonResult> GetCuestionariosJsonCompletos(string nombreCategoria)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var cuestionarios = await this.repoCuestionarios.GetCuestionarioCompletoAsync(nombreCategoria, idUsuario);
+            var cuestionarios = await this.repoCuestionarios.GetCuestionarioCompletoAsync(nombreCategoria, UsuarioActualId);
             return Json(cuestionarios);
         }
         [AuthorizeUsuario]
@@ -76,13 +73,10 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<JsonResult> EnviarInvitacionPartida(string nombreAmigo, string codigoSala)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
 
             int idAmigo = await this.repoUsuarios.GetIdUsuarioByNombreAsync(nombreAmigo);
 
-            // 2. Insertamos en la tabla de invitaciones (necesitas crear este método en el repo)
-            await this.repoSocial.RegistrarInvitacionAsync(idUsuario, idAmigo, codigoSala);
+            await this.repoSocial.RegistrarInvitacionAsync(UsuarioActualId, idAmigo, codigoSala);
 
             return Json(new { status = "OK" });
         }
@@ -91,9 +85,8 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<JsonResult> RegistrarRespuesta(int partidaId, int indicePregunta, bool esCorrecta)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             int puntos = esCorrecta ? 1 : 0;
-            await this.repoJuego.RegistrarRespuestaAsync(partidaId, idUsuario, indicePregunta, esCorrecta, puntos);
+            await this.repoJuego.RegistrarRespuestaAsync(partidaId, UsuarioActualId, indicePregunta, esCorrecta, puntos);
 
             bool todosListos = await this.repoJuego.TodosHanRespondidoAsync(partidaId, indicePregunta);
             var ranking = await this.repoJuego.GetRankingAsync(partidaId);
@@ -122,13 +115,11 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<JsonResult> AvanzarPregunta(int partidaId, int nuevoIndice)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
             bool todosRespondieron = await this.repoJuego.TodosHanRespondidoAsync(partidaId, nuevoIndice - 1);
             if (!todosRespondieron)
                 return Json(new { todosAvanzaron = false });
 
-            await this.repoJuego.AvanzarJugadorAsync(partidaId, idUsuario, nuevoIndice);
+            await this.repoJuego.AvanzarJugadorAsync(partidaId, UsuarioActualId, nuevoIndice);
             bool todosAvanzaron = await this.repoJuego.TodosHanRespondidoAsync(partidaId, nuevoIndice);
             if (todosAvanzaron)
             {
@@ -141,11 +132,9 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<JsonResult> GuardarPartidaIndividual(string cuestionario, int correctas, int totales)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
             int puntuacion = correctas * 10;
 
-            await this.repoJuego.GuardarHistorialIndividualAsync(idUsuario, cuestionario, puntuacion, correctas, totales);
+            await this.repoJuego.GuardarHistorialIndividualAsync(UsuarioActualId, cuestionario, puntuacion, correctas, totales);
 
             return Json(new { success = true });
         }
@@ -200,10 +189,7 @@ namespace ProyectoPersonal.Controllers
                 return Json(new List<Usuario>());
             }
 
-            string idClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            int idLogueado = int.Parse(idClaim);
-
-            List<InformacionUsuario> usuarios = await this.repoSocial.BuscarUsuariosNuevosAsync(idLogueado, textoBusqueda);
+            List<InformacionUsuario> usuarios = await this.repoSocial.BuscarUsuariosNuevosAsync(UsuarioActualId, textoBusqueda);
 
             var resultados = usuarios.Select(u => new
             {
@@ -217,14 +203,13 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<JsonResult> ReclamarCorazonAnuncio()
         {
-            string idClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            int idUsuario = int.Parse(idClaim);
+           
 
-            bool recargado = await this.repoUsuarios.RecargarPorAnuncioAsync(idUsuario);
+            bool recargado = await this.repoUsuarios.RecargarPorAnuncioAsync(UsuarioActualId);
 
             if (recargado)
             {
-                int corazonesTotales = await this.repoUsuarios.ActualizarYObtenerCorazonesAsync(idUsuario);
+                int corazonesTotales = await this.repoUsuarios.ActualizarYObtenerCorazonesAsync(UsuarioActualId);
                 return Json(new { success = true, corazones = corazonesTotales, mensaje = "¡Has recuperado 1 corazón!" });
             }
 

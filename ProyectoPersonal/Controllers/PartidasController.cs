@@ -21,7 +21,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace ProyectoPersonal.Controllers
 {
     
-    public class PartidasController : Controller
+    public class PartidasController : BaseController
     {
         private readonly IMemoryCache memoryCache;
         private readonly IHubContext<TrivialHub> hubContext;
@@ -53,13 +53,12 @@ namespace ProyectoPersonal.Controllers
         public async Task<IActionResult> Index()
         {
             List<string> categorias= await this.repoCuestionarios.GetCategoriasAsync();
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             
-            int corazones = await this.repoUsuarios.ActualizarYObtenerCorazonesAsync(idUsuario);
+            int corazones = await this.repoUsuarios.ActualizarYObtenerCorazonesAsync(UsuarioActualId);
                 
             ViewBag.Corazones = corazones;
-            ViewBag.Invitaciones = await this.repoSocial.GetInvitacionesPendientesAsync(idUsuario);
-            ViewBag.SolicitudesAmistad = await this.repoSocial.GetSolicitudesRecibidasAsync(idUsuario);
+            ViewBag.Invitaciones = await this.repoSocial.GetInvitacionesPendientesAsync(UsuarioActualId);
+            ViewBag.SolicitudesAmistad = await this.repoSocial.GetSolicitudesRecibidasAsync(UsuarioActualId);
             
             if (User.IsInRole("ADMIN") || User.IsInRole("Admin"))
             {
@@ -68,7 +67,7 @@ namespace ProyectoPersonal.Controllers
             }
             
             
-            ViewBag.NumSolicitudes = await this.repoSocial.GetNumeroSolicitudesPendientesAsync(idUsuario);
+            ViewBag.NumSolicitudes = await this.repoSocial.GetNumeroSolicitudesPendientesAsync(UsuarioActualId);
             
             return View(categorias);
         }
@@ -77,10 +76,7 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> PreguntasTrivial(string nombreCuestionario, int cantidad, int tiempo, string codigoSala, int? nivel)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
-
-            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(idUsuario);
+            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(UsuarioActualId);
             if (!tieneVidas)
             {
                 TempData["ErrorVidas"] = "¡Te has quedado sin corazones! Espera un poco o consigue más.";
@@ -130,10 +126,7 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> PreguntasQuizz(string nombreCuestionario, int cantidad, int tiempo, string codigoSala,int? nivel)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
-
-            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(idUsuario);
+            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(UsuarioActualId);
             if (!tieneVidas)
             {
                 TempData["ErrorVidas"] = "¡Te has quedado sin corazones! Espera un poco o consigue más.";
@@ -185,10 +178,7 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> ModoSupervivencia(string nombreCuestionario)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
-
-            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(idUsuario);
+            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(UsuarioActualId);
             if (!tieneVidas)
             {
                 TempData["ErrorVidas"] = "Necesitas al menos 1 corazón para el Modo Supervivencia.";
@@ -220,22 +210,19 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> RuletaDeLaMuerte()
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario == null) return RedirectToAction("Login", "Usuarios");
-
-            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(idUsuario);
+            bool tieneVidas = await this.repoUsuarios.ConsumirCorazonAsync(UsuarioActualId);
             if (!tieneVidas)
             {
                 TempData["ErrorVidas"] = "Necesitas al menos 1 corazón para jugar a la Ruleta.";
                 return RedirectToAction("Index");
             }
-            List<string> AllTemas = await this.repoCuestionarios.GetAllNombresCuestionariosPublicosAsync(idUsuario);
+            List<string> AllTemas = await this.repoCuestionarios.GetAllNombresCuestionariosPublicosAsync(UsuarioActualId);
 
             Random randomString = new Random();
             string temaFinal = AllTemas[randomString.Next(AllTemas.Count)];
 
 
-            string cacheKey = "CACHE_IDS_+"+temaFinal+"_0";
+            string cacheKey = "CACHE_IDS_"+temaFinal+"_0";
             
             List<int> idsPreguntas;
             if (this.memoryCache.Get(cacheKey) == null)
@@ -261,13 +248,7 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> GuardarRanking(int puntos,string modoJuego, string nombreCuestionario)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario == null)
-            {
-                return RedirectToAction("Login", "Managed");
-            }
-
-            await this.repoJuego.GuardarRankingModoAsync(idUsuario, modoJuego,puntos, nombreCuestionario);
+            await this.repoJuego.GuardarRankingModoAsync(UsuarioActualId, modoJuego,puntos, nombreCuestionario);
 
             TempData["MensajeExito"] = $"¡Partida de Supervivencia terminada! Has conseguido {puntos} puntos.";
 

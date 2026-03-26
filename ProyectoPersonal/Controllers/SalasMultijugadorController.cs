@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace ProyectoPersonal.Controllers
 {
-    public class SalasMultijugadorController : Controller
+    public class SalasMultijugadorController : BaseController
     {
         private readonly IRepositorySalas repoSalas;
         private readonly IRepositoryCuestionarios repoCuestionarios;
@@ -25,10 +25,10 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearSala(string nombreCuestionario, string tipoPartida, int cantidad, int tiempo, bool publico, int capacidad)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            
             int idCuestionario = await this.repoCuestionarios.GetIdCuestionarioByNombreAsync(nombreCuestionario);
             
-            SalaJuego sala = await this.repoSalas.CreateSalaJuegoAsync(idUsuario, idCuestionario, tipoPartida, cantidad, tiempo, publico, capacidad);
+            SalaJuego sala = await this.repoSalas.CreateSalaJuegoAsync(UsuarioActualId, idCuestionario, tipoPartida, cantidad, tiempo, publico, capacidad);
 
             HttpContext.Session.SetString("TIPO_PARTIDA_" + sala.IdSala, tipoPartida);
 
@@ -40,10 +40,10 @@ namespace ProyectoPersonal.Controllers
         {
             SalaJuego sala = await this.repoSalas.GetSalaPorCodigoAsync(codigo);
             if (sala == null) return RedirectToAction("Index", "Home");
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario != null)
+            
+            if (UsuarioActualId != null)
             {
-                ViewBag.Amigos = await this.repoSocial.GetAmistadesAsync(idUsuario);
+                ViewBag.Amigos = await this.repoSocial.GetAmistadesAsync(UsuarioActualId);
             }
             return View(sala);
         }
@@ -87,16 +87,14 @@ namespace ProyectoPersonal.Controllers
         [HttpGet]
         public async Task<IActionResult> Unirse(string codigoSala)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            ParticipantePartida participante = await this.repoSalas.UnirseAPartidaAsync(idUsuario, codigoSala);
+            ParticipantePartida participante = await this.repoSalas.UnirseAPartidaAsync(UsuarioActualId, codigoSala);
             if (participante == null)
             {
                 TempData["Error"] = "La sala está llena o ya ha comenzado la partida.";
                 return RedirectToAction("Index", "Home");
             }
             
-            await this.repoSocial.ActualizarEstadoInvitacionAsync(idUsuario, codigoSala, "aceptada");
+            await this.repoSocial.ActualizarEstadoInvitacionAsync(UsuarioActualId, codigoSala, "aceptada");
             SalaJuego sala = await this.repoSalas.GetSalaPorCodigoAsync(codigoSala);
             int idPartida = sala.IdSala;
             ViewBag.CodigoSala = codigoSala;
@@ -137,16 +135,7 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario]
         public async Task<IActionResult> CancelarSalaManual(int idSala)
         {
-            string idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(idClaim))
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            int miId = int.Parse(idClaim);
-
-            bool cancelada = await this.repoSalas.CancelarSalaAnfitrionAsync(idSala, miId);
+            bool cancelada = await this.repoSalas.CancelarSalaAnfitrionAsync(idSala, UsuarioActualId);
             
             if (cancelada)
             {
@@ -158,14 +147,6 @@ namespace ProyectoPersonal.Controllers
         [AuthorizeUsuario(Policy ="SoloAdmin")]
         public async Task<IActionResult> ForzarCierreSala(int idSala)
         {
-            string rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-
-            if (rol != "ADMIN") 
-            {
-                TempData["Error"] = "No tienes permisos de moderación.";
-                return RedirectToAction("Index", "Partidas");
-            }
-
             await this.repoSalas.CerrarSalaAdminAsync(idSala);
 
             TempData["MensajeExito"] = "Sala purgada del sistema correctamente.";
