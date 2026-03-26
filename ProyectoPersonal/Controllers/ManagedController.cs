@@ -154,7 +154,7 @@ namespace ProyectoPersonal.Controllers
             if (string.IsNullOrEmpty(token))
             {
                 ViewData["ERROR"] = "Enlace de activación no válido.";
-                return View("Login", "Managed");
+                return RedirectToAction("Login", "Managed");
             }
 
             bool cuentaActivada = await this.repoUsuarios.ActivarCuentaAsync(token);
@@ -220,16 +220,27 @@ namespace ProyectoPersonal.Controllers
             return View(usuario);
         }
         [AuthorizeUsuario]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> DeleteUsuario(int idusuario)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            int idActual = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             bool esAdmin = User.IsInRole("ADMIN");
-            bool esPropioUsuario = idUsuario == idusuario;
+            bool esPropioUsuario = idActual == idusuario;
 
             if (!esAdmin && !esPropioUsuario)
                 return RedirectToAction("ErrorAcceso", "Managed");
 
             await this.repoUsuarios.DeleteUsuario(idusuario);
+
+            if (esAdmin && !esPropioUsuario)
+            {
+                TempData["MensajeExito"] = "Usuario eliminado correctamente.";
+                return RedirectToAction("Index", "Partidas");
+            }
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Managed");
         }
         public IActionResult OlvidoPassword()

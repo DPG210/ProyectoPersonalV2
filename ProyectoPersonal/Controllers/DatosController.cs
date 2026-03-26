@@ -191,6 +191,7 @@ namespace ProyectoPersonal.Controllers
 
             return Json(listaRankings);
         }
+        [AuthorizeUsuario]
         [HttpGet]
         public async Task<JsonResult> BuscarUsuarios(string textoBusqueda)
         {
