@@ -1,5 +1,4 @@
-﻿using MailKit;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoPersonal.Filter;
@@ -68,7 +67,7 @@ namespace ProyectoPersonal.Controllers
             }
             else
             {
-                ViewData["ERROR"] = "Usuario o contraseña incorrectos.";
+                TempData["ERROR"] = "Usuario o contraseña incorrectos.";
                 return View();
             }
 
@@ -141,11 +140,9 @@ namespace ProyectoPersonal.Controllers
         [HttpPost]
         public async Task<IActionResult> CambiarAvatar(string nombreAvatar)
         {
-            int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            if (idUsuario != null)
-            {
-                await this.repoUsuarios.CambiarAvatarAsync(idUsuario, nombreAvatar);
-            }
+            
+            await this.repoUsuarios.CambiarAvatarAsync(UsuarioActualId, nombreAvatar);
+            
             return RedirectToAction("Perfil", "Managed");
         }
         [HttpGet]
@@ -153,7 +150,7 @@ namespace ProyectoPersonal.Controllers
         {
             if (string.IsNullOrEmpty(token))
             {
-                ViewData["ERROR"] = "Enlace de activación no válido.";
+                TempData["ERROR"] = "Enlace de activación no válido.";
                 return RedirectToAction("Login", "Managed");
             }
 
@@ -161,11 +158,11 @@ namespace ProyectoPersonal.Controllers
 
             if (cuentaActivada)
             {
-                ViewData["MENSAJE"] = "¡Cuenta activada con éxito! Ya puedes iniciar sesión y empezar a jugar.";
+                TempData["MENSAJE"] = "¡Cuenta activada con éxito! Ya puedes iniciar sesión y empezar a jugar.";
             }
             else
             {
-                ViewData["ERROR"] = "El enlace ha caducado o la cuenta ya estaba activada.";
+                TempData["ERROR"] = "El enlace ha caducado o la cuenta ya estaba activada.";
             }
 
             return RedirectToAction("Login", "Managed");
@@ -174,9 +171,6 @@ namespace ProyectoPersonal.Controllers
         [HttpGet]
         public async Task<IActionResult> Perfil(int? id, string buscar = null, string tab = null)
         {
-            
-            if (UsuarioActualId == null) return RedirectToAction("Login", "Usuarios");
-
             int idPerfil = id ?? UsuarioActualId;
             bool esMiPerfil = (idPerfil == UsuarioActualId);
 
