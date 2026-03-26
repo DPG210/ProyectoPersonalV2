@@ -28,8 +28,7 @@
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-3 mb-0">Escanea para unirte</p>
                     </div>
 
-                    <form asp-controller="SalasMultijugador" asp-action="EmpezarPartida" method="post">
-                        <input type="hidden" name="idSala" value="@Model.IdSala" />
+                    <form id="form-iniciar-partida" asp-controller="SalasMultijugador" asp-action="EmpezarPartida" method="post">
                         <input type="hidden" name="codigo" value="@Model.CodigoSala" />
                         <button type="submit" id="btn-empezar-main"
                                 class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-5 rounded-[2rem] text-lg tracking-tighter shadow-[0_8px_0_rgb(67,56,202)] hover:shadow-[0_6px_0_rgb(67,56,202)] hover:translate-y-[2px] active:shadow-none active:translate-y-[8px] transition-all flex items-center justify-center gap-3">
@@ -57,7 +56,9 @@
                             <h3 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                                 <i class="bi bi-people-fill text-indigo-500"></i> Jugadores
                             </h3>
-                            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Esperando rivales...</p>
+                            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                Estado: <span id="estado-sala" class="text-indigo-600">Esperando</span>
+                            </p>
                         </div>
                         <div class="bg-indigo-50 border border-indigo-100 text-indigo-700 px-5 py-2.5 rounded-2xl font-black text-lg shadow-sm flex items-center gap-2">
                             <span class="relative flex h-3 w-3">
@@ -68,8 +69,7 @@
                         </div>
                     </div>
 
-                    <div id="contenedor-participantes" class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-grow content-start">
-                    </div>
+                    <div id="contenedor-participantes" class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-grow content-start"></div>
                 </div>
             </div>
 
@@ -203,6 +203,15 @@
             const contadorElement = document.getElementById("contador");
             const contenedorParticipantes = document.getElementById("contenedor-participantes");
             const btnEmpezar = document.getElementById("btn-empezar-main");
+            const estadoSala = document.getElementById("estado-sala");
+            const formIniciar = document.getElementById("form-iniciar-partida");
+
+            if (formIniciar) {
+                formIniciar.addEventListener("submit", () => {
+                    btnEmpezar.disabled = true;
+                    btnEmpezar.innerHTML = '<span class="animate-spin inline-block h-5 w-5 border-4 border-white border-t-transparent rounded-full mr-3"></span>INICIANDO...';
+                });
+            }
 
             async function actualizarLobby() {
                 try {
@@ -211,15 +220,18 @@
 
                     const participantes = await response.json();
 
+                    estadoSala.textContent = "Esperando";
+
                     if (participantes.length !== totalJugadores) {
+                        const previos = new Set(Array.from(contenedorParticipantes.querySelectorAll('[data-user-id]')).map(el => el.getAttribute('data-user-id')));
                         totalJugadores = participantes.length;
                         contadorElement.textContent = totalJugadores;
 
-                        contenedorParticipantes.innerHTML = "";
-
                         participantes.forEach(p => {
-                            let esHost = p.idUsuario == @Model.IdAnfitrion;
+                            const yaExiste = previos.has(String(p.idUsuario));
+                            if (yaExiste) return;
 
+                            let esHost = p.idUsuario == @Model.IdAnfitrion;
                             let containerClasses = esHost
                                 ? "bg-amber-50 border-2 border-amber-300 shadow-amber-100/50"
                                 : "bg-slate-50 border-2 border-transparent hover:border-indigo-200";
@@ -231,19 +243,53 @@
                             let nombreAvatar = p.avatar ? p.avatar : 'avatar1.png';
                             let avatarUrl = `/images/avatares/${nombreAvatar}`;
 
-                            contenedorParticipantes.insertAdjacentHTML('beforeend', `
-                                <div class="relative p-4 rounded-3xl shadow-sm flex items-center gap-4 transition-all animate__animated animate__zoomIn ${containerClasses}">
-                                    ${hostBadge}
-                                    <div class="flex-shrink-0">
-                                        <img src="${avatarUrl}" class="w-14 h-14 rounded-2xl bg-white shadow-inner border-2 ${esHost ? 'border-amber-400' : 'border-indigo-200'} object-cover" alt="Avatar de ${p.nombre}" />
-                                    </div>
-                                    <div class="flex-grow overflow-hidden">
-                                        <div class="font-black text-slate-800 text-lg truncate">${p.nombre}</div>
-                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En posición</div>
-                                    </div>
+                            const card = document.createElement('div');
+                            card.className = `relative p-4 rounded-3xl shadow-sm flex items-center gap-4 transition-all animate__animated animate__fadeInUp ${containerClasses}`;
+                            card.setAttribute('data-user-id', p.idUsuario);
+                            card.innerHTML = `
+                                ${hostBadge}
+                                <div class="flex-shrink-0">
+                                    <img src="${avatarUrl}" class="w-14 h-14 rounded-2xl bg-white shadow-inner border-2 ${esHost ? 'border-amber-400' : 'border-indigo-200'} object-cover" alt="Avatar de ${p.nombre}" />
                                 </div>
-                            `);
+                                <div class="flex-grow overflow-hidden">
+                                    <div class="font-black text-slate-800 text-lg truncate">${p.nombre}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En posición</div>
+                                </div>
+                            `;
+
+                            contenedorParticipantes.appendChild(card);
                         });
+
+                        // si hay menos jugadores, re-render simple para quitar los que ya no están
+                        if (participantes.length < contenedorParticipantes.querySelectorAll('[data-user-id]').length) {
+                            contenedorParticipantes.innerHTML = "";
+                            participantes.forEach(p => {
+                                let esHost = p.idUsuario == @Model.IdAnfitrion;
+                                let containerClasses = esHost
+                                    ? "bg-amber-50 border-2 border-amber-300 shadow-amber-100/50"
+                                    : "bg-slate-50 border-2 border-transparent hover:border-indigo-200";
+
+                                let hostBadge = esHost
+                                    ? `<div class="absolute -top-3 -right-2 bg-amber-400 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-md border-2 border-white transform rotate-6 animate-pulse">Host <i class="bi bi-star-fill ml-1"></i></div>`
+                                    : '';
+
+                                let nombreAvatar = p.avatar ? p.avatar : 'avatar1.png';
+                                let avatarUrl = `/images/avatares/${nombreAvatar}`;
+
+                                contenedorParticipantes.insertAdjacentHTML('beforeend', `
+                                    <div class="relative p-4 rounded-3xl shadow-sm flex items-center gap-4 transition-all animate__animated animate__fadeInUp ${containerClasses}" data-user-id="${p.idUsuario}">
+                                        ${hostBadge}
+                                        <div class="flex-shrink-0">
+                                            <img src="${avatarUrl}" class="w-14 h-14 rounded-2xl bg-white shadow-inner border-2 ${esHost ? 'border-amber-400' : 'border-indigo-200'} object-cover" alt="Avatar de ${p.nombre}" />
+                                        </div>
+                                        <div class="flex-grow overflow-hidden">
+                                            <div class="font-black text-slate-800 text-lg truncate">${p.nombre}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En posición</div>
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        }
 
                         if (totalJugadores >= @Model.CapacidadMaxima && @Model.CapacidadMaxima > 0) {
                             btnEmpezar.innerHTML = '<span class="animate-spin inline-block h-5 w-5 border-4 border-white border-t-transparent rounded-full mr-3"></span>SALA LLENA. INICIANDO...';
@@ -254,6 +300,8 @@
                             setTimeout(() => {
                                 document.getElementById("btn-empezar-main").closest("form").submit();
                             }, 2000);
+                        } else if (!btnEmpezar.disabled) {
+                            btnEmpezar.innerHTML = '<i class="bi bi-rocket-takeoff-fill text-2xl"></i><span>INICIAR PARTIDA</span>';
                         }
                     }
                 } catch (error) {

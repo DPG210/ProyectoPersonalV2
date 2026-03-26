@@ -2,7 +2,7 @@
 using ProyectoPersonal.Filter;
 using ProyectoPersonal.Models;
 using ProyectoPersonal.Repositories;
-using System.Security.Claims;
+
 
 namespace ProyectoPersonal.Controllers
 {
@@ -27,7 +27,10 @@ namespace ProyectoPersonal.Controllers
         {
             
             int idCuestionario = await this.repoCuestionarios.GetIdCuestionarioByNombreAsync(nombreCuestionario);
-            
+            if(idCuestionario == 0) 
+            { 
+                return RedirectToAction("Index","Partidas"); 
+            }
             SalaJuego sala = await this.repoSalas.CreateSalaJuegoAsync(UsuarioActualId, idCuestionario, tipoPartida, cantidad, tiempo, publico, capacidad);
 
             HttpContext.Session.SetString("TIPO_PARTIDA_" + sala.IdSala, tipoPartida);
@@ -41,20 +44,20 @@ namespace ProyectoPersonal.Controllers
             SalaJuego sala = await this.repoSalas.GetSalaPorCodigoAsync(codigo);
             if (sala == null) return RedirectToAction("Index", "Home");
             
-            if (UsuarioActualId != null)
-            {
-                ViewBag.Amigos = await this.repoSocial.GetAmistadesAsync(UsuarioActualId);
-            }
+            ViewBag.Amigos = await this.repoSocial.GetAmistadesAsync(UsuarioActualId);
+            
             return View(sala);
         }
 
         [AuthorizeUsuario]
         [HttpPost]
-        public async Task<IActionResult> EmpezarPartida(int idSala, string codigo)
+        public async Task<IActionResult> EmpezarPartida(string codigo)
         {
-            await this.repoSalas.CambiarEstadoPartidaAsync(idSala, "JUGANDO");
-
             SalaJuego sala = await this.repoSalas.GetSalaPorCodigoAsync(codigo);
+            if (sala == null)
+                return RedirectToAction("Index", "Partidas");
+            
+            await this.repoSalas.CambiarEstadoPartidaAsync(sala.IdSala, "JUGANDO");
 
             if (sala.TipoJuego == "quizz") 
             {
@@ -96,10 +99,14 @@ namespace ProyectoPersonal.Controllers
             
             await this.repoSocial.ActualizarEstadoInvitacionAsync(UsuarioActualId, codigoSala, "aceptada");
             SalaJuego sala = await this.repoSalas.GetSalaPorCodigoAsync(codigoSala);
-            int idPartida = sala.IdSala;
+            if (sala == null)
+            {
+                return RedirectToAction("Index", "Partidas");
+            }
+
             ViewBag.CodigoSala = codigoSala;
-            ViewBag.PartidaId = idPartida;
-            
+            ViewBag.PartidaId = sala.IdSala;
+
             return View("EsperandoInicio");
         }
         [AuthorizeUsuario]
