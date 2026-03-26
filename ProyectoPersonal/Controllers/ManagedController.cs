@@ -223,6 +223,12 @@ namespace ProyectoPersonal.Controllers
         public async Task<IActionResult> DeleteUsuario(int idusuario)
         {
             int idUsuario = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            bool esAdmin = User.IsInRole("ADMIN");
+            bool esPropioUsuario = idUsuario == idusuario;
+
+            if (!esAdmin && !esPropioUsuario)
+                return RedirectToAction("ErrorAcceso", "Managed");
+
             await this.repoUsuarios.DeleteUsuario(idusuario);
             return RedirectToAction("Login", "Managed");
         }
